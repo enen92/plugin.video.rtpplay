@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<settings>
+   <category label="Definicoes gerais">
+      <setting id="tipostr" type="enum" values="Automatico|RTMP|SMIL PL" label="Tipo de stream em directo" default="0" enable="!eq(-1,false)"/>
+   </category>
+   <category label="Programas">
+   		<setting id="icon_plot" type="bool" label="Mostrar poster do programa e descricao" default="true"/>
+   		<setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
+   		<setting id="show-view" type="enum" label="Vista - TvShows" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="7"/>
+   		<setting id="episodes-view" type="enum" label="Vista - Episodios" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="5"/>
+   </category>
+</settings>

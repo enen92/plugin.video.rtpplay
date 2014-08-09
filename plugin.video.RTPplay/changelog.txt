@@ -1,0 +1,6 @@
+Version 1.2.0
+* Bump gotham
+
+Version 1.0.1
+* First addon release
+
