@@ -34,10 +34,9 @@ def arquivo_coleccoes(url):
 		totalit = len(match)
 		print match
 		for urlsbase,titulo in match:
-			addDir(title_clean_up(titulo),(url_arquivo + urlsbase).replace('&amp;','&'),28,os.path.join(artfolder,'arquivo.png'),totalit,pasta=True)
+			addDir(title_clean_up(titulo),(url_arquivo + urlsbase).replace('&amp;','&'),10,os.path.join(artfolder,'arquivo.png'),totalit,pasta=True)
 			
 def listar_programas_arquivo(url):
-	print url
 	try: source=abrir_url(url)
 	except: source=''; msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
 	if source:
@@ -48,8 +47,8 @@ def listar_programas_arquivo(url):
 			if thumbnail: thumbnail = thumbnail[0]
 			else: thumbnail = ''
 			titulo = title_clean_up(titulo)
-			information = { "Title": titulo,"Plot":title_clean_up(descricao) }
-			addprograma(titulo,(url_base + urlsbase).replace('&amp;','&'),29,thumbnail,totalit,information)
+			information = { "Title": titulo,"plot":title_clean_up(descricao) }
+			addprograma(titulo,(url_base + urlsbase).replace('&amp;','&'),11,thumbnail,totalit,information)
 		xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
 		setview('show-view')
 		
@@ -70,7 +69,7 @@ def listar_episodios_arquivo(url):
 					print ano
 					sinopse = re.findall('<p>(.*?)</p>', trunk, re.DOTALL)
 					information = { "Title": title_clean_up(match[0][1]),"Year":ano,"Aired":(ano+"-01-01"),"Plot":title_clean_up(sinopse[1]) }
-					addepisode(title_clean_up(match[0][1]),title_clean_up(match[0][0]),11,match[0][2].replace('&amp;','&'),totalit,information)
+					addepisode(title_clean_up(match[0][1]),title_clean_up(match[0][0]).replace('&amp;','&'),17,match[0][2].replace('&amp;','&').replace(';',''),totalit,information)
 				except: pass
 		xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 		setview('episodes-view')

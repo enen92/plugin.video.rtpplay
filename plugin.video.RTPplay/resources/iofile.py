@@ -18,25 +18,12 @@
  
 """
 
-import urllib2
-
-def abrir_url(url):
-	req = urllib2.Request(url)
-	req.add_header('User-Agent', 'Mozilla/5.0 (Windows; U; Windows NT 5.1; en-GB; rv:1.9.0.3) Gecko/2008092417 Firefox/3.0.3')
-	response = urllib2.urlopen(req)
-	source=response.read()
-	response.close()
-	return source
-	
-def mechanize_browser(url):
-	import mechanize
-	br = mechanize.Browser()
-	br.set_handle_equiv(True)
-	br.set_handle_redirect(True)
-	br.set_handle_referer(True)
-	br.set_handle_robots(False)
-	br.addheaders = [('User-agent', 'Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.1) Gecko/2008071615 Fedora/3.0.1-1.fc9 Firefox/3.0.1')]
-	r = br.open(url)
-	html = r.read()
-	html_source= br.response().read()
-	return html_source
+def save(filename,contents):  
+     fh = open(filename, 'w')
+     fh.write(contents)  
+     fh.close()
+     
+def readfile(filename):
+	f = open(filename, "r")
+	string = f.read()
+	return string

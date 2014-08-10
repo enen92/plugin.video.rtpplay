@@ -2,7 +2,7 @@
 <addon id="plugin.video.RTPplay" name="RTP Play" version="1.2.0" provider-name="enen92">
   <requires>
     <import addon="xbmc.python" version="2.1.0"/>
-    <import addon="script.module.t0mm0.common" version="1.1.0"/>
+    <import addon="script.module.mechanize" version="0.2.6"/>
   </requires>
   <extension point="xbmc.python.pluginsource" library="addon.py">
     <provides>video</provides>

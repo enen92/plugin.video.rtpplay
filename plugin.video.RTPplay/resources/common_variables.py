@@ -30,7 +30,10 @@ selfAddon = xbmcaddon.Addon(id=addon_id)
 datapath = xbmc.translatePath(selfAddon.getAddonInfo('profile')).decode('utf-8')
 addonfolder = xbmc.translatePath(selfAddon.getAddonInfo('path')).decode('utf-8')
 artfolder = os.path.join(addonfolder,'resources','img')
-print artfolder
-favpath = os.path.join(datapath,'Favourites')
-programafav = os.path.join(favpath,'Programa')
+programafav = os.path.join(datapath,'favoritos')
+watched_folder = os.path.join(datapath,'watched')
+watched_database = os.path.join(datapath,'watched','watched.db')
 msgok = xbmcgui.Dialog().ok
+
+def translate(text):
+      return selfAddon.getLocalizedString(text).encode('utf-8')

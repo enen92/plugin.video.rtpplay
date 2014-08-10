@@ -17,9 +17,10 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  
 """
-import xbmc,xbmcplugin,xbmcaddon,xbmcgui,sys,os,urllib
+import xbmc,xbmcplugin,xbmcaddon,xbmcgui,sys,os,urllib,xbmcvfs
 from utilities import *
 from common_variables import *
+from iofile import *
 
 
 #Function to add a Show directory
@@ -33,16 +34,12 @@ def addprograma(name,url,mode,iconimage,number_of_items,information):
 	liz.setInfo( type="Video", infoLabels=information)
 	contextMenuItems = []
 	savepath = programafav
-	name2 = name.replace('[B]','')
-	name2 = name2.replace('[/B]','')
-	name2 = name2.replace('[COLOR blue]','')
-	name2 = name2.replace('[/COLOR]','')
-	NewFavFile=os.path.join(savepath,removeNonAscii(name2.lower())+'.txt')
-	if os.path.exists(NewFavFile):
-		contextMenuItems.append(('Remover programa dos favoritos', 'XBMC.RunPlugin(%s?mode=26&name=%s&url=%s&iconimage=%s&checker=%s)' % (sys.argv[0], name2.lower(), url, iconimage, 'programa')))
+	NewFavFile=os.path.join(programafav,removeNonAscii(name.lower())+'.txt')
+	if xbmcvfs.exists(NewFavFile):
+		contextMenuItems.append(('Remover programa dos favoritos', 'XBMC.RunPlugin(%s?mode=20&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
 	else:
-		contextMenuItems.append(('Adicionar programa aos favoritos', 'XBMC.RunPlugin(%s?mode=24&name=%s&url=%s&iconimage=%s&checker=%s)' % (sys.argv[0], name, url, iconimage, 'programa')))
-	liz.addContextMenuItems(contextMenuItems, replaceItems=True)
+		contextMenuItems.append(('Adicionar programa aos favoritos', 'XBMC.RunPlugin(%s?mode=19&name=%s&url=%s&iconimage=%s&plot=%s)' % (sys.argv[0], name, urllib.quote_plus(url), urllib.quote_plus(iconimage), urllib.quote_plus(information["plot"]))))
+	liz.addContextMenuItems(contextMenuItems, replaceItems=False)
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True,totalItems=number_of_items)
 	return ok
 	
@@ -50,17 +47,30 @@ def addprograma(name,url,mode,iconimage,number_of_items,information):
 def addepisode(name,url,mode,iconimage,number_of_items,information):
 	u=sys.argv[0]+"?url="+urllib.quote_plus(url)+"&mode="+str(mode)+"&name="+urllib.quote_plus(name)+"&iconimage="+urllib.quote_plus(iconimage)
 	ok=True
+	contextMenuItems = []
+	if xbmcvfs.exists(watched_database):
+		text_db = readfile(watched_database)
+		database = eval(text_db)
+		if url in database.keys():
+			overlay=7
+			playcount=1
+			information["overlay"]=overlay
+			information["playcount"]=playcount
+			contextMenuItems.append(('Remover visto', 'XBMC.RunPlugin(%s?mode=22&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+		else: contextMenuItems.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+	else: contextMenuItems.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
 	liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
 	liz.setProperty('fanart_image', os.path.join(artfolder,'fanart.png'))
 	liz.setInfo( type="Video", infoLabels=information)
+	liz.addContextMenuItems(contextMenuItems, replaceItems=False)
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=False,totalItems=number_of_items)
 	return ok
-	
+		
 #Function to add a video/audio Link
 def addLink(name,url,iconimage,number_of_items):
 	ok=True
 	liz=xbmcgui.ListItem(name, iconImage="DefaultVideo.png", thumbnailImage=iconimage)
-	liz.setProperty('fanart_image', addonfolder + artfolder + 'fanart.png')
+	liz.setProperty('fanart_image', os.path.join(artfolder,'fanart.png'))
 	liz.setInfo( type="Video", infoLabels={ "Title": name } )
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=url,listitem=liz,isFolder=False,totalItems=number_of_items)
 	return ok
