@@ -1,13 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-   <category label="Definicoes gerais">
-      <setting id="tipostr" type="enum" values="Automatico|RTMP|SMIL PL" label="Tipo de stream em directo" default="0"/>
-      <setting id="epg" type="bool" label="Mostrar programacao" default="true"/>
+   <category label="40035">
+      <setting id="tipostr" type="enum" values="Automatico|RTMP|SMIL PL" label="40036" default="0"/>
    </category>
-   <category label="Programas">
-   		<setting id="icon_plot" type="bool" label="Mostrar poster do programa e descricao" default="true"/>
-   		<setting label="[B][COLOR green]Definições de vista:[/B][/COLOR]" type="lsep" />
-   		<setting id="show-view" type="enum" label="Vista - TvShows" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="7"/>
-   		<setting id="episodes-view" type="enum" label="Vista - Episodios" values="Lista|Lista Grande|Miniatura|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="5"/>
+   <category label="40037">
+   	 <setting id="icon_plot" type="bool" label="40038" default="true"/>
+   	 <setting label="40039" type="lsep" />
+   	 <setting id="show-view" type="enum" label="40040" values="List|Biglist|Thumbs|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="7"/>
+   	 <setting id="episodes-view" type="enum" label="40041" values="List|Biglist|Thumbs|Posters|Fanart|Media Info 1|Media Info 2|Media Info 3" default="5"/>
    </category>
 </settings>

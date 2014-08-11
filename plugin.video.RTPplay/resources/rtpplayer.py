@@ -24,7 +24,7 @@ from watched import *
 class RTPPlayer(xbmc.Player):
 	def __init__(self,videoarray,mainurl):
 		self._playbackLock = True
-		print("Criou o player")
+		print("Player has been created")
 		self.array = videoarray
 		self.urlwatched = mainurl
 		self.timepos = 0
@@ -37,20 +37,20 @@ class RTPPlayer(xbmc.Player):
 		self.totalTime = self.getTotalTime()
                               
 	def onPlayBackStopped(self):
-		print "Parou o player"
+		print("player stopped")
 		self._playbackLock = False
 		if self.timepos/self.totalTime > 0.92 and self.playingfile == self.array[-1]:
 			mark_as_watched(self.urlwatched)
-		else: print "Marcas é o caralho"
+		else: pass
 
 
 	def onPlayBackEnded(self):              
 		self.onPlayBackStopped()
-		print('Chegou ao fim. Playback terminou.')
+		print("playbackended")
 
 	def _trackPosition(self):
 		try:
 			self.timepos = self.getTime()
 			print self.timepos
-		except: print('Erro trackposition')
+		except: print('Error trackposition')
 

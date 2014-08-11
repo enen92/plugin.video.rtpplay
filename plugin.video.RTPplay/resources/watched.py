@@ -29,7 +29,7 @@ def mark_as_watched(url):
 	database = eval(database_text)
 	database[url]=True
 	save(watched_database,str(database))
-	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % ('RTPPlay', "Marked as watched", 1,os.path.join(addonfolder,"icon.png")))
+	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % (translate(40000), translate(40033), 1,os.path.join(addonfolder,"icon.png")))
 	xbmc.executebuiltin("XBMC.Container.Refresh")
 	
 def remove_watched_mark(url):
@@ -37,5 +37,5 @@ def remove_watched_mark(url):
 	database = eval(database_text)
 	del database[url]
 	save(watched_database,str(database))
-	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % ('RTPPlay', "Removed watch mark", 1,os.path.join(addonfolder,"icon.png")))
+	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % (translate(40000), translate(40034), 1,os.path.join(addonfolder,"icon.png")))
 	xbmc.executebuiltin("XBMC.Container.Refresh")

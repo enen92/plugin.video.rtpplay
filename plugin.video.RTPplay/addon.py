@@ -31,61 +31,61 @@ from resources.resolver import *
 from resources.favourites import *
 
 def main_menu():
-	addDir('[COLOR blue][B]Em directo[/B][/COLOR]','Volta menu','', 'rtp',1)
-	addDir('[B]- Canais Tv/Rádio[/B]','http://www.rtp.pt/play/direto',1,os.path.join(artfolder,'tvradio_icon.png'),1)
-	addDir('[COLOR blue][B]Emissões[/B][/COLOR]','Volta menu','', 'rtp',1)
-	addDir('[B]- Mais recentes[/B]','http://www.rtp.pt/play/ondemand',2, os.path.join(artfolder,'maisrecentes.png'),1)
-	addDir('[B]- Mais populares[/B]','http://www.rtp.pt/play/sideWidget.php?type=popular&place=HP',3,os.path.join(artfolder,'maispopulares.png'),11)
-	addDir('[B]- Listar[/B]','http://www.rtp.pt/play/ondemand',4,os.path.join(artfolder,'lista.png'),1)
-	addDir('[B]- Pesquisar[/B]','http://www.rtp.pt/play/ondemand',5,os.path.join(artfolder,'pesquisa.png'),1)
-	addDir('[COLOR blue][B]Programas[/B][/COLOR]','Volta menu','', 'rtp',1)
-	addDir('[B]- Favoritos[/B]','http://www.rtp.pt/play/ondemand',6,os.path.join(artfolder,'programasaz.png'),1)
-	addDir('[B]- De A-Z[/B]','http://www.rtp.pt/play/ondemand',7,os.path.join(artfolder,'programasaz.png'),1)
-	addDir('[B]- Pesquisar[/B]','http://www.rtp.pt/play/ondemand',8,os.path.join(artfolder,'pesquisa.png'),1)
-	addDir('[COLOR blue][B]Arquivo RTP[/B][/COLOR]','Volta menu','', 'rtp',1)
-	addDir('[B]- Colecções[/B]','http://www.rtp.pt/arquivo/colecoes',9,os.path.join(artfolder,'arquivo.png'),1)
+	addDir('[COLOR blue][B]'+ translate(40001) +'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'live.png'),1)
+	addDir('[B]'+translate(40002)+'[/B]','http://www.rtp.pt/play/direto',1,os.path.join(artfolder,'tvradio_icon.png'),1)
+	addDir('[COLOR blue][B]'+translate(40003)+'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'broadcast.png'),1)
+	addDir('[B]'+translate(40004)+'[/B]','http://www.rtp.pt/play/ondemand',2, os.path.join(artfolder,'maisrecentes.png'),1)
+	addDir('[B]'+translate(40005)+'[/B]','http://www.rtp.pt/play/sideWidget.php?type=popular&place=HP',3,os.path.join(artfolder,'maispopulares.png'),11)
+	addDir('[B]'+translate(40006)+'[/B]','http://www.rtp.pt/play/ondemand',4,os.path.join(artfolder,'lista.png'),1)
+	addDir('[B]'+translate(40007)+'[/B]','http://www.rtp.pt/play/ondemand',5,os.path.join(artfolder,'pesquisa.png'),1)
+	addDir('[COLOR blue][B]'+translate(40008)+'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'tvshow.png'),1)
+	addDir('[B]'+translate(40009)+'[/B]','http://www.rtp.pt/play/ondemand',6,os.path.join(artfolder,'favourite.png'),1)
+	addDir('[B]'+translate(40010)+'[/B]','http://www.rtp.pt/play/ondemand',7,os.path.join(artfolder,'az.png'),1)
+	addDir('[B]'+translate(40007)+'[/B]','http://www.rtp.pt/play/ondemand',8,os.path.join(artfolder,'pesquisa.png'),1)
+	addDir('[COLOR blue][B]'+translate(40011)+'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'archive.png'),1)
+	addDir('[B]'+translate(40012)+'[/B]','http://www.rtp.pt/arquivo/colecoes',9,os.path.join(artfolder,'arquivo.png'),1)
 	xbmc.executebuiltin("Container.SetViewMode(501)")
 
 def radio_tv_menu(name):
-	if 'recentes' in name:
+	if ('R' in name) or ('r' in name):
 		mode = 3
 	elif 'A-Z' in name:
 		mode = 13
-	addDir('[B]- Emissões da TV[/B]','http://www.rtp.pt/play/recent.php?type=TV',mode, addonfolder + artfolder + 'tv.png',2)
-	addDir('[B]- Emissões da rádio[/B]','http://www.rtp.pt/play/recent.php?type=RADIO',mode, addonfolder + artfolder + 'radio.png',2)
+	addDir('[B]'+translate(40013)+'[/B]','http://www.rtp.pt/play/recent.php?type=TV',mode,os.path.join(artfolder,'tv.png'),2)
+	addDir('[B]'+translate(40014)+'[/B]','http://www.rtp.pt/play/recent.php?type=RADIO',mode, os.path.join(artfolder,'radio.png'),2)
 	
 def az_menu(name):
 	alphabet = ['0-9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
 	if 'TV' in name:
 		tipo = 'tv'
-	elif 'rádio' in name:
+	elif 'Ra' in name:
 		tipo = 'radio'
 	else: sys.exit(0)
 	for letter in alphabet:
-		addDir('[B]'+ letter +'[/B]','http://www.rtp.pt/play/az.php?letter='+letter+'&channelType='+tipo,15, addonfolder + artfolder + 'programasaz.png',len(alphabet))
+		addDir('[B]'+ letter +'[/B]','http://www.rtp.pt/play/az.php?letter='+letter+'&channelType='+tipo,15,os.path.join(artfolder,'az.png'),len(alphabet))
 	
 
 def menu_emissao():
-	addDir('[B]- Por canal[/B]','http://www.rtp.pt/play/ondemand',12, addonfolder + artfolder + 'por_canal.png',2)
-	addDir('[B]- Por tema[/B]','http://www.rtp.pt/play/ondemand',12, addonfolder + artfolder + 'por_tema.png',2)
+	addDir('[B]'+translate(40015)+'[/B]','http://www.rtp.pt/play/ondemand',12, os.path.join(artfolder,'porcanal.png'),2)
+	addDir('[B]'+translate(40016)+'[/B]','http://www.rtp.pt/play/ondemand',12, os.path.join(artfolder,'portema.png'),2)
 	
 def emissao_lista(name,url):
 	try:
 		page_source = abrir_url(url)
 	except:
 		page_source = ''
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(40000),translate(40017))
 	if page_source:
-		if 'canal' in name:
+		if 'c' in url:
 			regex = '<a href="/play/procura\?p_c=(.+?)" title=".+?">(.+?)</a>'
 			link_part = '/play/procura?p_c='
-		elif 'tema' in name:
+		elif 't' in url:
 			regex = '<a href="/play/procura\?p_t=(.+?)" title=".+?">(.+?)</a>'
 			link_part = '/play/procura?p_t='
 		match=re.compile(regex).findall(page_source)
 		for canal,titulo in match:
 			titulo = title_clean_up(titulo)
-			addDir('[B]' + titulo + '[/B]',base_url + link_part + canal,14, addonfolder + artfolder + 'tree.png',len(match))
+			addDir('[B]' + titulo + '[/B]',base_url + link_part + canal,14,os.path.join(artfolder,'tree.png'),len(match))
 	else:
 		sys.exit(0)
 		
@@ -158,7 +158,6 @@ elif mode==14: list_emissoes(url)
 elif mode==15: list_tv_shows(name,url)
 elif mode==16: list_episodes(url,plot)
 elif mode==17: get_show_episode_parts(name,url,iconimage)
-
 elif mode==19: add_favourite(name,url,iconimage,plot)
 elif mode==20: remove_favourite(name)
 elif mode==21: mark_as_watched(url)

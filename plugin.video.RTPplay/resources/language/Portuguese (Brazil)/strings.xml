@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<strings>
+
+	<string id="40000">RTP Play</string>
+    
+    <!-- addon.py -->
+    
+    <string id="40001">Em directo</string>
+    <string id="40002">- Canais Tv/Rádio</string>
+    <string id="40003">Emissões</string>
+    <string id="40004">- Mais recentes</string>
+    <string id="40005">- Mais populares</string>
+    <string id="40006">- Listar</string>
+    <string id="40007">- Pesquisar</string>		
+    <string id="40008">Programas</string>
+    <string id="40009">- Favoritos</string>			
+    <string id="40010">- De A-Z</string>
+    <string id="40011">Arquivo RTP</string>
+    <string id="40012">- Colecções</string>
+    <string id="40013">- Emissões da TV</string>
+    <string id="40014">- Emissões da rádio</string>				
+    <string id="40015">- Por canal</string>
+    <string id="40016">- Por tema</string>					
+    <string id="40017">Não conseguiu abrir o site / Verifique a ligação</string>
+    <!-- directory.py -->			
+    <string id="40018">Remover programa dos favoritos</string>
+    <string id="40019">Adicionar programa aos favoritos</string>	
+    <string id="40020">Remover marca de visto</string>
+    <string id="40021">Marcar como visto</string>
+    <!-- favourites.py -->
+    <string id="40022">Adicionado aos favoritos do addon</string>
+    <string id="40023">Não tem favoritos</string>
+    <string id="40024">Remover dos favoritos do addon</string>
+    <!-- ondemand.py -->
+    <string id="40025">Informação não disponível.</string>
+    <string id="40026">Pág </string>
+    <string id="40027">Próxima >></string>
+    <string id="40028">Seguinte >></string>
+    <string id="40029">Não há emissões</string>
+    <string id="40030">Escreva o parâmetro de pesquisa</string>		
+    <string id="40031">Não foram encontrados programas.</string>
+    <string id="40032">Obtendo vídeos...</string>	
+	<!-- watched.py -->
+	<string id="40033">Marcado como visto</string>
+	<string id="40034">Removida a marca de visto</string>
+	<!-- settings.xml -->
+	<string id="40035">Ao vivo</string>
+	<string id="40036">Tipo de stream (alterar caso não consiga visualizar)</string>
+	<string id="40037">On demand</string>
+	<string id="40038">Mostrar poster do programa e descrição</string>
+	<string id="40039">[B][COLOR green]Definições de vista:[/B][/COLOR]</string>
+	<string id="40040">Vista - TvShows</string>
+	<string id="40041">Vista - Episodios</string>
+																					
+</strings>

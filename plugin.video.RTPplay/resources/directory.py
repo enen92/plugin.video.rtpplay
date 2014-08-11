@@ -36,9 +36,9 @@ def addprograma(name,url,mode,iconimage,number_of_items,information):
 	savepath = programafav
 	NewFavFile=os.path.join(programafav,removeNonAscii(name.lower())+'.txt')
 	if xbmcvfs.exists(NewFavFile):
-		contextMenuItems.append(('Remover programa dos favoritos', 'XBMC.RunPlugin(%s?mode=20&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+		contextMenuItems.append((translate(40018), 'XBMC.RunPlugin(%s?mode=20&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
 	else:
-		contextMenuItems.append(('Adicionar programa aos favoritos', 'XBMC.RunPlugin(%s?mode=19&name=%s&url=%s&iconimage=%s&plot=%s)' % (sys.argv[0], name, urllib.quote_plus(url), urllib.quote_plus(iconimage), urllib.quote_plus(information["plot"]))))
+		contextMenuItems.append((translate(40019), 'XBMC.RunPlugin(%s?mode=19&name=%s&url=%s&iconimage=%s&plot=%s)' % (sys.argv[0], name, urllib.quote_plus(url), urllib.quote_plus(iconimage), urllib.quote_plus(information["plot"]))))
 	liz.addContextMenuItems(contextMenuItems, replaceItems=False)
 	ok=xbmcplugin.addDirectoryItem(handle=int(sys.argv[1]),url=u,listitem=liz,isFolder=True,totalItems=number_of_items)
 	return ok
@@ -56,9 +56,9 @@ def addepisode(name,url,mode,iconimage,number_of_items,information):
 			playcount=1
 			information["overlay"]=overlay
 			information["playcount"]=playcount
-			contextMenuItems.append(('Remover visto', 'XBMC.RunPlugin(%s?mode=22&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
-		else: contextMenuItems.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
-	else: contextMenuItems.append(('Marcar como visto', 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+			contextMenuItems.append((translate(40020), 'XBMC.RunPlugin(%s?mode=22&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+		else: contextMenuItems.append((translate(40021), 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
+	else: contextMenuItems.append((translate(40021), 'XBMC.RunPlugin(%s?mode=21&name=%s&url=%s&iconimage=%s)' % (sys.argv[0], name, urllib.quote_plus(url), iconimage)))
 	liz=xbmcgui.ListItem(name, iconImage="DefaultFolder.png", thumbnailImage=iconimage)
 	liz.setProperty('fanart_image', os.path.join(artfolder,'fanart.png'))
 	liz.setInfo( type="Video", infoLabels=information)

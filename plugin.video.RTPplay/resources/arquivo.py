@@ -28,7 +28,7 @@ url_base = 'http://www.rtp.pt/'
 
 def arquivo_coleccoes(url):
 	try: source=abrir_url(url)
-	except: source=''; msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+	except: source=''; msgok(translate(40000),translate(40017))
 	if source:
 		match = re.compile('<div class=".+?"><h2><a href="(.+?)" title="(.+?)">').findall(source)
 		totalit = len(match)
@@ -38,7 +38,7 @@ def arquivo_coleccoes(url):
 			
 def listar_programas_arquivo(url):
 	try: source=abrir_url(url)
-	except: source=''; msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+	except: source=''; msgok(translate(40000),translate(40017))
 	if source:
 		match = re.compile('href="(.+?)" title="(.+?)".+?itemprop="image" src="(.+?)".+?<p itemprop=\'description\'>(.+?)</p>').findall(source)
 		totalit=len(match)
@@ -55,7 +55,7 @@ def listar_programas_arquivo(url):
 def listar_episodios_arquivo(url):
 	print url
 	try: source=abrir_url(url)
-	except: source=''; msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+	except: source=''; msgok(translate(40000),translate(40017))
 	if source:
 		html_source_trunk = re.findall('<div class="El(.*?)</div>', source, re.DOTALL)
 		for trunk in html_source_trunk:

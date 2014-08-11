@@ -31,7 +31,7 @@ def list_tv_shows(name,url):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(40000),translate(40017))
 	if page_source:
 		match=re.compile('href="(.+?)" title=".+?"><h3>(.+?)</h3>').findall(page_source)
 		totalit= len(match)
@@ -46,10 +46,10 @@ def list_tv_shows(name,url):
 					except: thumbnail=''
 					sinopse=re.compile('<p class="Sinopse">(.+?)</span></p>').findall(html_source)
 					if sinopse: information = { "Title": name,"plot": clean_html(title_clean_up(sinopse[0])) }
-					else: information = { "Title": name,"plot":"Informação não disponível." }
+					else: information = { "Title": name,"plot":translate(40025) }
 				addprograma(titulo,base_url + urlsbase,16,thumbnail,totalit,information)
 			else:
-				information = { "Title": name,"plot":"Informação não disponível." }
+				information = { "Title": name,"plot":translate(40025) }
 				thumbnail = ''
 				addprograma(titulo,base_url + urlsbase,15,thumbnail,totalit,information)
 		xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
@@ -67,14 +67,14 @@ def list_episodes(url,plot):
 	else: pass
 	try:
 		source = abrir_url(url)
-	except: source=''; msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+	except: source=''; msgok(translate(40000),translate(40017))
 	if source:
 		match=re.compile('href="(.+?)"><img alt="(.+?)" src="(.+?)".+?<i class="date"><b>(.+?)</b>').findall(source)
 		totalit = len(match)
 		for urlsbase,titulo,thumbtmp,data in match:
 			try:thumbnail=img_base_url + re.compile('src=(.+?)&amp').findall(thumbtmp)[0]
 			except: thumbnail=''
-			if not plot: plot = "Informação não disponível."
+			if not plot: plot = translate(40025)
 			information = { "Title": title_clean_up(titulo),"plot":plot,"aired":format_data(data) }
 			addepisode('[B]' + title_clean_up(titulo) + '[COLOR blue] (' + data +')' + '[/B][/COLOR]',base_url + urlsbase,17,thumbnail,totalit,information)
 		pag_num_total=re.compile('.*page:(.+?)}\)\">Fim &raquo').findall(source)
@@ -83,7 +83,7 @@ def list_episodes(url,plot):
 				if int(current_page) == int(pag_num_total[0]): pass
 				else: 
 					url_next='http://www.rtp.pt/play/browseprog/' + prog_id[0] + '/' + str(int(current_page)+1) + '/true'
-					addDir('[B][COLOR blue]Pág ('+current_page+'/'+pag_num_total[0]+')[/B][/COLOR] | Próxima >>',url_next,16,'',1,pasta=True)
+					addDir('[B][COLOR blue]'+translate(40026)+' ('+current_page+'/'+pag_num_total[0]+')[/B][/COLOR] | ' + translate(40027),url_next,16,os.path.join(artfolder,'next.png'),1,pasta=True)
 			except: pass
 	xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 	setview('episodes-view')
@@ -98,7 +98,7 @@ def list_emissoes(urltmp):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''	
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(40000),translate(40017))
 	if page_source:
 		pag_num_total=re.compile('.*page=(.+?)">Fim &raquo').findall(page_source)
 		html_source_trunk = re.findall('<div class="item">(.*?)<p class=', page_source, re.DOTALL)
@@ -113,7 +113,7 @@ def list_emissoes(urltmp):
 						titulo = title_clean_up(titulo)
 						plot = re.compile('<p>(.+?)</p').findall(trunk)
 						if plot: plot = title_clean_up(plot[0])
-						else: plot = "Informação não disponível."
+						else: plot = translate(40025)
 						data = format_data(data)
 						information = { "Title": titulo,"Plot":plot,"aired":data }
 						addepisode('[B]' + titulo + '[COLOR blue] (' + data +')' + '[/B][/COLOR]',base_url + urlsbase,17,thumbnail,totalit,information)
@@ -123,16 +123,16 @@ def list_emissoes(urltmp):
 				match = re.compile('&page=(\d+)').findall(urltmp)
 				if match: urltmp = urltmp.replace('&page='+match[0],'')
 				url=urltmp + '&page=' + str(page_next)
-				addDir('[B]Pag '+ page_num + '/' + pag_num_total[0] + '[/B][B][COLOR blue] | Seguinte >>[/B][/COLOR]',url,14,'',1)
+				addDir('[B]'+translate(40026)+ page_num + '/' + pag_num_total[0] + '[/B][B][COLOR blue] | '+translate(40028)+'[/B][/COLOR]',url,14,os.path.join(artfolder,'next.png'),1)
 			else: pass
 			xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 			setview('episodes-view')
-		else: msgok('RTP Play','Não há emissões');sys.exit(0)
+		else: msgok(translate(40000),translate(40029));sys.exit(0)
 	else:
 		sys.exit(0)
 		
 def pesquisa_emissoes():
-	keyb = xbmc.Keyboard('', 'Escreva o parâmetro de pesquisa')
+	keyb = xbmc.Keyboard('', translate(40030))
 	keyb.doModal()
 	if (keyb.isConfirmed()):
 		search = keyb.getText()
@@ -141,7 +141,7 @@ def pesquisa_emissoes():
 		list_emissoes(urltmp)
 		
 def pesquisa_programas():
-	keyb = xbmc.Keyboard('', 'Escreva o parâmetro de pesquisa')
+	keyb = xbmc.Keyboard('', translate(40030))
 	keyb.doModal()
 	if (keyb.isConfirmed()):
 		search = keyb.getText()
@@ -154,7 +154,7 @@ def list_show_search(url):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''	
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(40000),translate(40017))
 	if page_source:
 		match = re.compile('<a href="(.+?)" title=".+?"><h3>(.+?)</h3>').findall(page_source)
 		if match:
@@ -168,12 +168,12 @@ def list_show_search(url):
 						information={ "Title": title_clean_up(titulo),"plot":plot }
 						try: thumbnail=img_base_url + re.compile('src=(.+?)&amp').findall(source)[0]
 						except: thumbnail=''
-					except: information={ "Title": title_clean_up(titulo),"plot":"Informação não disponível" };thumbnail=''
-				else: information={ "Title": title_clean_up(titulo),"plot":"Informação não disponível" };thumbnail=''
-				addprograma(title_clean_up(titulo),base_url + urlsbase,15,thumbnail,totalit,information)
+					except: information={ "Title": title_clean_up(titulo),"plot":translate(40025) };thumbnail=''
+				else: information={ "Title": title_clean_up(titulo),"plot":translate(40025) };thumbnail=''
+				addprograma(title_clean_up(titulo),base_url + urlsbase,16,thumbnail,totalit,information)
 			xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
 			setview('show-view')
-		else: msgok('RTP Play','Não foram encontrados programas.');sys.exit(0)
+		else: msgok(translate(40000),translate(40031));sys.exit(0)
 		
 def get_show_episode_parts(name,url,iconimage):
 	try:
@@ -190,7 +190,7 @@ def get_show_episode_parts(name,url,iconimage):
 				url_video_list.append(base_url + urlsbase)			
 		number_of_parts = len(url_video_list)
 		dp = xbmcgui.DialogProgress()
-		dp.create("RTP Play",'Obtendo vídeos...')
+		dp.create(translate(40000),translate(40032))
 		dp.update(0)
 		i=0
 		for part in url_video_list:
@@ -199,9 +199,9 @@ def get_show_episode_parts(name,url,iconimage):
 			video_url = rtp_resolver(part)
 			if video_url: video_list.append(video_url)
 			else:pass
-			dp.update(int((float(i)/number_of_parts)*100), 'Obtendo vídeos...')
+			dp.update(int((float(i)/number_of_parts)*100), translate(40032))
 		try:
-			dp.update(100, 'Obtendo vídeos...')
+			dp.update(100, translate(40032))
 			dp.close()
 		except: pass
 		playlist = xbmc.PlayList(1)
@@ -219,4 +219,4 @@ def get_show_episode_parts(name,url,iconimage):
 		while player._playbackLock:
 			player._trackPosition()
 			xbmc.sleep(1000)
-	else:msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection');sys.exit(0)
+	else:msgok(translate(40000),translate(40017));sys.exit(0)

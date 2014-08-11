@@ -42,7 +42,7 @@ def list_favourites():
 			except: pass
 		xbmcplugin.setContent(int(sys.argv[1]), 'tvshows')
 		setview('show-view')
-	else: msgok('RTP Play','Não tem favoritos');sys.exit(0)
+	else: msgok(translate(40000),translate(40023));sys.exit(0)
 			
 	
 def add_favourite(name,url,iconimage,plot):
@@ -50,13 +50,13 @@ def add_favourite(name,url,iconimage,plot):
 	text = name + '|' + url + '|' + iconimage + '|' + plot
 	favfile=os.path.join(programafav,removeNonAscii(name.lower())+'.txt')
 	save(favfile,text)
-	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % ('RTPPlay', "Adicionado aos favoritos do addon", 1,os.path.join(addonfolder,"icon.png")))
+	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % (translate(40000), translate(40022), 1,os.path.join(addonfolder,"icon.png")))
 	xbmc.executebuiltin("XBMC.Container.Refresh")
 	
 def remove_favourite(name):
 	favfile=os.path.join(programafav,removeNonAscii(name.lower())+'.txt')
 	xbmcvfs.delete(favfile)
-	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % ('RTPPlay', "Remover dos favoritos do addon", 1,os.path.join(addonfolder,"icon.png")))
+	xbmc.executebuiltin("Notification(%s,%s,%i,%s)" % (translate(40000), translate(), 1,os.path.join(addonfolder,"icon.png")))
 	dirs,files = xbmcvfs.listdir(programafav)
 	if files:
 		xbmc.executebuiltin("XBMC.Container.Refresh")

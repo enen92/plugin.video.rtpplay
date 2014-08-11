@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<strings>
+
+	<string id="40000">RTP Play</string>
+    
+    <!-- addon.py -->
+    
+    <string id="40001">Live channels</string>
+    <string id="40002">- Tv/Radio channels</string>
+    <string id="40003">Broadcasts</string>
+    <string id="40004">- Recent</string>
+    <string id="40005">- Popular</string>
+    <string id="40006">- Lists</string>
+    <string id="40007">- Search</string>		
+    <string id="40008">Shows</string>
+    <string id="40009">- Favourites</string>			
+    <string id="40010">- A-Z listing</string>
+    <string id="40011">RTP Archive</string>
+    <string id="40012">- Colections</string>
+    <string id="40013">- TV broadcasts</string>
+    <string id="40014">- Radio broadcasts</string>				
+    <string id="40015">- By channel</string>
+    <string id="40016">- By theme</string>					
+    <string id="40017">Couldn't open URL / Check your connection</string>
+    <!-- directory.py -->			
+    <string id="40018">Remove show from favourites</string>
+    <string id="40019">Add show to favourites</string>	
+    <string id="40020">Remove watched status</string>
+    <string id="40021">Mark as watched</string>
+    <!-- favourites.py -->
+    <string id="40022">Added to addon favourites</string>
+    <string id="40023">You have no show favourites</string>
+    <string id="40024">Remove from addon favourites</string>
+    <!-- ondemand.py -->
+    <string id="40025">Information not available.</string>
+    <string id="40026">Page </string>
+    <string id="40027">Next >></string>
+    <string id="40028">Next >></string>
+    <string id="40029">No broadcasts</string>
+    <string id="40030">Enter search string</string>		
+    <string id="40031">No shows have been found</string>
+    <string id="40032">Getting vídeos...</string>	
+	<!-- watched.py -->
+	<string id="40033">Marked as watched</string>
+	<string id="40034">Removed watched status</string>
+	<!-- settings.xml -->
+	<string id="40035">Live</string>
+	<string id="40036">Stream type (change this if you have no video)</string>
+	<string id="40037">On demand</string>
+	<string id="40038">Show posters and plot</string>
+	<string id="40039">[B][COLOR green]View settings:[/B][/COLOR]</string>
+	<string id="40040">View - TvShows</string>
+	<string id="40041">View - Episodes</string>
+																					
+</strings>

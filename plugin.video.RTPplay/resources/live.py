@@ -27,7 +27,7 @@ def radiotv_channels(url):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(40000),translate(40017))
 	if page_source:
 		#Tv channels
 		match=re.compile('<a  id=".+?" title="(.+?)" href="(.+?)"><img src="(.+?)"').findall(page_source)
