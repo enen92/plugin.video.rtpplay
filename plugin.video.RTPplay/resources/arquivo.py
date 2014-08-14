@@ -28,17 +28,16 @@ url_base = 'http://www.rtp.pt/'
 
 def arquivo_coleccoes(url):
 	try: source=abrir_url(url)
-	except: source=''; msgok(translate(40000),translate(40017))
+	except: source=''; msgok(translate(30001),translate(30018))
 	if source:
 		match = re.compile('<div class=".+?"><h2><a href="(.+?)" title="(.+?)">').findall(source)
 		totalit = len(match)
-		print match
 		for urlsbase,titulo in match:
 			addDir(title_clean_up(titulo),(url_arquivo + urlsbase).replace('&amp;','&'),10,os.path.join(artfolder,'arquivo.png'),totalit,pasta=True)
 			
 def listar_programas_arquivo(url):
 	try: source=abrir_url(url)
-	except: source=''; msgok(translate(40000),translate(40017))
+	except: source=''; msgok(translate(30001),translate(30018))
 	if source:
 		match = re.compile('href="(.+?)" title="(.+?)".+?itemprop="image" src="(.+?)".+?<p itemprop=\'description\'>(.+?)</p>').findall(source)
 		totalit=len(match)
@@ -53,9 +52,8 @@ def listar_programas_arquivo(url):
 		setview('show-view')
 		
 def listar_episodios_arquivo(url):
-	print url
 	try: source=abrir_url(url)
-	except: source=''; msgok(translate(40000),translate(40017))
+	except: source=''; msgok(translate(30001),translate(30018))
 	if source:
 		html_source_trunk = re.findall('<div class="El(.*?)</div>', source, re.DOTALL)
 		for trunk in html_source_trunk:
@@ -66,7 +64,6 @@ def listar_episodios_arquivo(url):
 					ano = re.compile('Ano (\d+)').findall(trunk)
 					if ano: ano = ano[0]
 					else: ano='n/a'
-					print ano
 					sinopse = re.findall('<p>(.*?)</p>', trunk, re.DOTALL)
 					information = { "Title": title_clean_up(match[0][1]),"Year":ano,"Aired":(ano+"-01-01"),"Plot":title_clean_up(sinopse[1]) }
 					addepisode(title_clean_up(match[0][1]),title_clean_up(match[0][0]).replace('&amp;','&'),17,match[0][2].replace('&amp;','&').replace(';',''),totalit,information)

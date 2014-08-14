@@ -27,7 +27,7 @@ def radiotv_channels(url):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''
-		msgok(translate(40000),translate(40017))
+		msgok(translate(30001),translate(30018))
 	if page_source:
 		#Tv channels
 		match=re.compile('<a  id=".+?" title="(.+?)" href="(.+?)"><img src="(.+?)"').findall(page_source)

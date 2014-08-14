@@ -8,7 +8,7 @@
     <provides>video</provides>
   </extension>
   <extension point="xbmc.addon.metadata">
-    <language>en pt</language>
+    <language>pt</language>
     <platform>all</platform>
     <summary lang="en">RTP Play XBMC/Kodi</summary>
     <summary lang="pt">RTP Play XBMC/Kodi</summary>

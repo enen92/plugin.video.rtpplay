@@ -51,6 +51,5 @@ class RTPPlayer(xbmc.Player):
 	def _trackPosition(self):
 		try:
 			self.timepos = self.getTime()
-			print self.timepos
 		except: print('Error trackposition')
 

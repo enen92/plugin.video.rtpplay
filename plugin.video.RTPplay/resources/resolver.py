@@ -49,5 +49,5 @@ def rtp_resolver(url):
 			else: return ''
 		except: return ''
 	else:
-		msgok(translate(40000),translate(40017))
+		msgok(translate(30001),translate(30018))
 		sys.exit(0)
