@@ -71,7 +71,7 @@ def grab_live_stream_url(url):
 				elif xbmc.getCondVisibility('system.platform.ATV2'): versao = 'm3u8'		
 				elif xbmc.getCondVisibility('system.platform.Windows'): versao = 'rtmp'
 				elif xbmc.getCondVisibility('system.platform.linux'):
-					if 'armv6' in os.uname()[4]: versao = 'rtmp'
+					if 'armv6' in os.uname()[4]: versao = 'm3u8'
 					else: versao = 'm3u8'
 			elif type_stream == '1': versao = 'rtmp'
 			elif type_stream == '2': versao = 'm3u8'
