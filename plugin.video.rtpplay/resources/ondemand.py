@@ -188,7 +188,7 @@ def list_show_search(url):
 		
 def get_show_episode_parts(name,url,iconimage):
 	try:
-		source = mechanize_browser(url)
+		source = abrir_url(url)
 	except: source = ''
 	if source:
 		url_video_list = []

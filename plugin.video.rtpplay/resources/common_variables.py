@@ -24,7 +24,7 @@ base_url = 'http://www.rtp.pt'
 img_base_url = 'http://img0.rtp.pt'
 player = base_url + '/play/player.swf'
 linkpart = ' live=true timeout=15'
-addon_id = 'plugin.video.RTPplay'
+addon_id = 'plugin.video.rtpplay'
 
 selfAddon = xbmcaddon.Addon(id=addon_id)
 datapath = xbmc.translatePath(selfAddon.getAddonInfo('profile')).decode('utf-8')

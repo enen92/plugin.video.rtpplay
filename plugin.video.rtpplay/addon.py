@@ -128,7 +128,10 @@ except: pass
 try: name=urllib.unquote_plus(params["name"])
 except: pass
 try: mode=int(params["mode"])
-except: pass
+except:
+	try: 
+		mode=params["mode"]
+	except: pass
 try: iconimage=urllib.unquote_plus(params["iconimage"])
 except: pass
 try: plot=urllib.unquote_plus(params["plot"])
@@ -140,7 +143,7 @@ print ("Name: "+str(name))
 print ("iconimage: "+str(iconimage))
 
 
-if mode==None or url==None or len(url)<1: main_menu()
+if mode==None: main_menu()
 elif mode==1: radiotv_channels(url)
 elif mode==2: radio_tv_menu(name)
 elif mode==3: list_episodes(url,plot)
@@ -162,11 +165,14 @@ elif mode==19: add_favourite(name,url,iconimage,plot)
 elif mode==20: remove_favourite(name)
 elif mode==21: mark_as_watched(url)
 elif mode==22: remove_watched_mark(url)
+elif mode == "resolve_and_play": play_from_outside(name)
 
-if (mode != 12) and (mode != 8) and (mode !=5) and (mode !=19) and (mode !=20) and (mode !=21) and (mode !=22):
+if (mode != 12) and (mode != 8) and (mode !=5) and (mode !=19) and (mode !=20) and (mode !=21) and (mode !=22) and (mode != "resolve_and_play"):
 	try:	xbmcvfs.delete(os.path.join(datapath,'searchprog.txt'))
 	except: pass
 	try: xbmcvfs.delete(os.path.join(datapath,'searchemiss.txt'))	
 	except: pass
+	
+
 
 xbmcplugin.endOfDirectory(int(sys.argv[1]))

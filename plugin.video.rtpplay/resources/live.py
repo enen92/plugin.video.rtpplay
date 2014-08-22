@@ -22,6 +22,8 @@ from webutils import *
 from common_variables import *
 from directory import *
 
+channel_db = {"rtp1": ["RTP 1","http://img0.rtp.pt/play/images/logo_rtp1.jpg"],"rtp2": ["RTP 2","http://img0.rtp.pt/play/images/logo_rtp2.jpg"], "rtpinformacao": ["RTP Informação","http://img0.rtp.pt/play/images/logo_rtpinformacao.jpg"],"rtpinternacional": ["RTP Internacional","http://img0.rtp.pt/play/images/logo_rtpinternacional.jpg"],"rtpmemoria": ["RTP Memória","http://img0.rtp.pt/play/images/logo_rtpmemoria.jpg"],"rtpmadeira": ["RTP Madeira","http://img0.rtp.pt/play/images/logo_rtpmadeira.jpg"],"rtpacores": ["RTP Açores","http://img0.rtp.pt/play/images/logo_rtpacores.jpg"],"rtpafrica": ["RTP África","http://img0.rtp.pt/play/images/logo_rtpafrica.jpg"]}
+
 def radiotv_channels(url):
 	try:
 		page_source = abrir_url(url)
@@ -54,7 +56,7 @@ def grab_live_stream_url(url):
 		page_source = abrir_url(url)
 	except:
 		page_source = ''
-		msgok('RTP Play','Não conseguiu abrir o site / Check your internet connection')
+		msgok(translate(30001),translate(30018))
 	if page_source:
 		if re.search('mms:', page_source):
         		match=re.compile('\"file\": \"(.+?)\",\"streamer\": \"(.+?)\"').findall(page_source)
@@ -71,7 +73,7 @@ def grab_live_stream_url(url):
 				elif xbmc.getCondVisibility('system.platform.ATV2'): versao = 'm3u8'		
 				elif xbmc.getCondVisibility('system.platform.Windows'): versao = 'rtmp'
 				elif xbmc.getCondVisibility('system.platform.linux'):
-					if 'armv6' in os.uname()[4]: versao = 'm3u8'
+					if 'armv6' in os.uname()[4]: versao = 'rtmp'
 					else: versao = 'm3u8'
 			elif type_stream == '1': versao = 'rtmp'
 			elif type_stream == '2': versao = 'm3u8'
@@ -85,4 +87,23 @@ def grab_live_stream_url(url):
         			url2 = match[0]
         			return url2
 	else:
-		sys.exit(0)
+		return None
+		
+def play_from_outside(name):
+	url = 'http://www.rtp.pt/play/direto/' + name
+	stream_url = grab_live_stream_url(url)
+	if stream_url:
+		if name in channel_db.keys():
+			labelname = channel_db[name][0]
+			thumbnail = channel_db[name][1]
+		else:
+			labelname = name
+			thumbnail = "http://img0.rtp.pt/play/images/logo_" + name + ".jpg"
+		listitem = xbmcgui.ListItem(labelname, iconImage=thumbnail, thumbnailImage=thumbnail)
+		listitem.setLabel(labelname)
+		listitem.setInfo("Video", {"Title":labelname})
+		listitem.setProperty('mimetype', 'video/x-msvideo')
+		listitem.setProperty('IsPlayable', 'true')
+		listitem.setPath(path=stream_url)
+		xbmcplugin.setResolvedUrl(int(sys.argv[1]),True,listitem)
+	
