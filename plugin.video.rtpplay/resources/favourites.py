@@ -27,7 +27,7 @@ from iofile import *
 
 
 def list_favourites():
-	if not xbmcvfs.exists(programafav): xbmcvfs.mkdir(programafav)
+	if not os.path.exists(programafav): xbmcvfs.mkdir(programafav)
 	dirs,files = xbmcvfs.listdir(programafav)
 	if files:
 		totalit = len(files)

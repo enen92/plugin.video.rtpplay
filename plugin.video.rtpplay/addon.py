@@ -35,8 +35,7 @@ def main_menu():
 	addDir('[B]'+translate(30003)+'[/B]','http://www.rtp.pt/play/direto',1,os.path.join(artfolder,'tvradio_icon.png'),1)
 	addDir('[COLOR blue][B]'+translate(30004)+'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'broadcast.png'),1)
 	addDir('[B]'+translate(30005)+'[/B]','http://www.rtp.pt/play/ondemand',2, os.path.join(artfolder,'maisrecentes.png'),1)
-	addDir('[B]'+translate(30006)+'[/B]','http://www.rtp.pt/play/sideWidget.php?type=popular&place=HP',3,os.path.join(artfolder,'maispopulares.png'),11)
-	addDir('[B]'+translate(30007)+'[/B]','http://www.rtp.pt/play/ondemand',4,os.path.join(artfolder,'lista.png'),1)
+	addDir('[B]'+translate(30006)+'[/B]','http://www.rtp.pt/play/bg_l_pg/?listDate=&listQuery=&listProgram=&listcategory=&listchannel=&listtype=popular&page=1&type=all',3,os.path.join(artfolder,'maispopulares.png'),11)
 	addDir('[B]'+translate(30008)+'[/B]','http://www.rtp.pt/play/ondemand',5,os.path.join(artfolder,'pesquisa.png'),1)
 	addDir('[COLOR blue][B]'+translate(30009)+'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'tvshow.png'),1)
 	addDir('[B]'+translate(30010)+'[/B]','http://www.rtp.pt/play/ondemand',6,os.path.join(artfolder,'favourite.png'),1)
@@ -51,23 +50,20 @@ def radio_tv_menu(name):
 		mode = 3
 	elif 'A-Z' in name:
 		mode = 13
-	addDir('[B]'+translate(30014)+'[/B]','http://www.rtp.pt/play/recent.php?type=TV',mode,os.path.join(artfolder,'tv.png'),2)
-	addDir('[B]'+translate(30015)+'[/B]','http://www.rtp.pt/play/recent.php?type=RADIO',mode, os.path.join(artfolder,'radio.png'),2)
+	addDir('[B]'+translate(30014)+'[/B]','http://www.rtp.pt/play/bg_l_pg/?listDate=&listQuery=&listProgram=&listcategory=&listchannel=&listtype=recent&page=1&type=tv',mode,os.path.join(artfolder,'tv.png'),2)
+	addDir('[B]'+translate(30015)+'[/B]','http://www.rtp.pt/play/bg_l_pg/?listDate=&listQuery=&listProgram=&listcategory=&listchannel=&listtype=recent&page=1&type=radio',mode, os.path.join(artfolder,'radio.png'),2)
 	
 def az_menu(name):
 	alphabet = ['0-9','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
-	if 'TV' in name:
+	if 'tv' in title_clean_up(name.lower()):
 		tipo = 'tv'
-	elif 'Ra' in name:
+	elif 'dio' in title_clean_up(name.lower()):
 		tipo = 'radio'
 	else: sys.exit(0)
 	for letter in alphabet:
-		addDir('[B]'+ letter +'[/B]','http://www.rtp.pt/play/az.php?letter='+letter+'&channelType='+tipo,15,os.path.join(artfolder,'az.png'),len(alphabet))
+		addDir('[B]'+ letter +'[/B]','http://www.rtp.pt/play/programas/'+tipo+'/'+letter,15,os.path.join(artfolder,'az.png'),len(alphabet))
 	
 
-def menu_emissao():
-	addDir('[B]'+translate(30016)+'[/B]','http://www.rtp.pt/play/ondemand',12, os.path.join(artfolder,'porcanal.png'),2)
-	addDir('[B]'+translate(30017)+'[/B]','http://www.rtp.pt/play/ondemand',12, os.path.join(artfolder,'portema.png'),2)
 	
 def emissao_lista(name,url):
 	try:
@@ -141,13 +137,13 @@ print ("Mode: "+str(mode))
 print ("URL: "+str(url))
 print ("Name: "+str(name))
 print ("iconimage: "+str(iconimage))
+print ("plotas: "+str(plot))
 
 
 if mode==None: main_menu()
 elif mode==1: radiotv_channels(url)
 elif mode==2: radio_tv_menu(name)
-elif mode==3: list_episodes(url,plot)
-elif mode==4: menu_emissao()
+elif mode==3: list_episodes(name,url,plot)
 elif mode==5: pesquisa_emissoes()
 elif mode==6: list_favourites()
 elif mode==7: radio_tv_menu(name)
@@ -159,7 +155,7 @@ elif mode==12: emissao_lista(name,url)
 elif mode==13: az_menu(name)
 elif mode==14: list_emissoes(url)
 elif mode==15: list_tv_shows(name,url)
-elif mode==16: list_episodes(url,plot)
+elif mode==16: list_episodes(name,url,plot)
 elif mode==17: get_show_episode_parts(name,url,iconimage)
 elif mode==19: add_favourite(name,url,iconimage,plot)
 elif mode==20: remove_favourite(name)
