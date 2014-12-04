@@ -1,8 +1,3 @@
-Version 2.0.1 (3/12/2014)
--Fixed due to changes on the site
--Added 'now playing' for live channels
--Minor fix for kodi
-
 Version 2.0.0 (11/08/2014)
 -Addon re-coded
 -Added archive section
