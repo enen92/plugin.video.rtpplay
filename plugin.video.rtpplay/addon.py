@@ -31,7 +31,7 @@ from resources.resolver import *
 from resources.favourites import *
 
 if not os.path.isdir(datapath):
-   os.makedirs(datapath)
+	os.makedirs(datapath)
 
 def main_menu():
 	addDir('[COLOR blue][B]'+ translate(30002) +'[/B][/COLOR]','rtp.pt/play','', os.path.join(artfolder,'live.png'),1)
