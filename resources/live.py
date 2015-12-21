@@ -86,17 +86,11 @@ def grab_live_stream_url(url):
 					application = re.compile('"application": "(.+?)"').findall(page_source)
         				url2 = 'rtmp://' + streamer[0] +'/' + application[0] + '/'+file_[0]+' swfVfy=1 pageUrl='+url +' swfUrl=' + player + linkpart
         				return url2
-        		else:
-        			match = re.compile('"stream_wma" : "(.+?)"').findall(page_source)
-        			if match:
-					url2=match[0]
-					return url2
-				else:        			
-					match=re.compile('\"smil\":(.+?)\"').findall(page_source)
-					if not match:
-						match=re.compile('\"d\":(.+?)\"').findall(page_source)
-        				url2 = match[0].replace('"','')
-        				return base64.b64decode(url2)
+			else:
+				smil_ = re.compile('liveo.smil = liveo\.(.+?);').findall(page_source)
+				file_ = re.compile('"'+smil_[0]+'":"(.+?)"').findall(page_source)
+				if file_:
+					return file_[0]
 	else:
 		return None
 
