@@ -90,7 +90,7 @@ def grab_live_stream_url(url):
 				smil_ = re.compile('liveo.smil = liveo\.(.+?);').findall(page_source)
 				file_ = re.compile('"'+smil_[0]+'":"(.+?)"').findall(page_source)
 				if file_:
-					return file_[0]
+					return file_[0]+'|User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36'
 	else:
 		return None
 
