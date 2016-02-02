@@ -85,8 +85,8 @@ def list_episodes(name,url,plot):
 				if titulo_array: 
 					if 'itemprop' not in titulo_array[0]:
 						titulo = title_clean_up(titulo_array[0])
-				img_tmp = re.compile('itemprop="thumbnail" src="(.+?)\?.+?" alt').findall(match)
-				if img_tmp: img = img_tmp[0]
+				img_tmp = re.compile('itemprop="thumbnail" src="http:\/\/img0\.rtp\.pt\/EPG\/imgth\/phpThumb\.php\?src=(.+?)\&.+?" alt').findall(match)
+				if img_tmp: img = "http://img0.rtp.pt" + img_tmp[0]
 				else: img = ''
 				if data and lnk:
 					information = { "Title": titulo,"plot":plot,"aired":format_data(data[0]) }
