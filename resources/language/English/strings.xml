@@ -51,5 +51,7 @@
 	<string id="30040">[B][COLOR blue]View settings:[/B][/COLOR]</string>
 	<string id="30041">View - TvShows</string>
 	<string id="30042">View - Episodes</string>
+    <string id="30043">Could not resolve stream url</string>
+
 																					
 </strings>
