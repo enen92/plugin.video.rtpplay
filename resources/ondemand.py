@@ -72,7 +72,9 @@ def list_episodes(name,url,plot):
 	else:pass
 	try:
 		source = abrir_url(url)
-	except: source=''; msgok(translate(30001),translate(30018))
+	except: 
+		source=''
+		msgok(translate(30001),translate(30018))
 	if source:
 		match_geral = re.findall('<div class="lazy(.*?)</i></span>',source,re.DOTALL)
 		if match_geral:
@@ -224,8 +226,6 @@ def get_show_episode_parts(name,url,iconimage):
 			liz.setProperty('mimetype', 'video')
 			playlist.add(video, liz)
 
-		xbmcPlayer = xbmc.Player()
-		xbmcPlayer.play(playlist)
 		player = RTPPlayer(videoarray=video_list,mainurl=url)
 		player.play(playlist)
 		while player._playbackLock:
