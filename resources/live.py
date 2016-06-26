@@ -39,7 +39,7 @@ def radiotv_channels(url):
 				titulo = title_clean_up(titulo)
 				stream_url = base_url + url2
 				img = img_old
-				addDir('[B][COLOR blue]' + titulo + '[/COLOR]' +' - ' + title_clean_up(prog)+ '[/B]',stream_url,23,img,totaltv,pasta=False,informacion={"Title":titulo,"plot":prog})
+				addDir('[B][COLOR blue]' + titulo + '[/COLOR]' +' - ' + title_clean_up(prog)+ '[/B]',stream_url,23,img,totaltv,pasta=False,information={"Title":titulo,"plot":prog})
 			except: pass
 	else:
 		sys.exit(0)

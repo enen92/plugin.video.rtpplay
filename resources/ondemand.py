@@ -101,7 +101,7 @@ def list_episodes(name,url,plot):
 			except: source_next = ''
 			if source_next:
 				if re.findall('itemtype="http://schema.org/VideoObject"',source_next):
-					addDir('[B][COLOR blue]'+translate(30028)+'|[/B][/COLOR] '+titulo,next_url,16,os.path.join(artfolder,'next.png'),1,pasta=True,informacion=information)
+					addDir('[B][COLOR blue]'+translate(30028)+'|[/B][/COLOR] '+titulo,next_url,16,os.path.join(artfolder,'next.png'),1,pasta=True,information=information)
 		except: pass
 	xbmcplugin.setContent(int(sys.argv[1]), 'episodes')
 	setview('episodes-view')
