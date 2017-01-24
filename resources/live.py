@@ -32,13 +32,14 @@ def radiotv_channels(url):
 		page_source = ''
 		msgok(translate(30001),translate(30018))
 	if page_source:
-		match=re.compile('<a title="(.+?)" href="(.+?)" class="mask-live"><img alt="(.+?)" src="(.*?)"').findall(page_source)
+		match=re.compile('<a title="(.+?)" href="(.+?)" class="mask-live "><img alt="(.+?)" src="(.+?)" class="img-responsive">').findall(page_source)
 		totaltv = len(match)
 		for titulo,url2,prog,img_old in match:
 			try:
 				titulo = title_clean_up(titulo)
 				stream_url = base_url + url2
-				img = img_old
+				if "http" not in img_old: img = "http:" + img_old
+				else: img = img_old
 				addDir('[B][COLOR blue]' + titulo + '[/COLOR]' +' - ' + title_clean_up(prog)+ '[/B]',stream_url,23,img,totaltv,pasta=False,information={"Title":titulo,"plot":prog})
 			except: pass
 	else:
@@ -65,9 +66,11 @@ def grab_live_stream_url(url):
 				url2=match[0]
 				return url2
 			#Grab HLS stream
-			smil_ = re.compile('file: "(.+?)",').findall(page_source)
+			smil_ = re.compile('var player.+?file: "(.+?)"', re.DOTALL).findall(page_source)
 			if smil_:
-					return smil_[0]+'|User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36&Referer=http://www.rtp.pt/play/'
+					if "http" not in smil_[0] : stream = "http:"+smil_[0]
+					else: stream = smil_[0] 
+					return stream+'|User-Agent=Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36&Referer=http://www.rtp.pt/play/'
 			else:
 				msgok(translate(30001),translate(30018))
 	else:

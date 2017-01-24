@@ -32,9 +32,10 @@ def rtp_resolver(url):
 			if match:
 				return match[0]
 			else:
-				match = re.compile("streamer.+?file:'(.+?)'").findall(source)
+				match = re.compile('file: "(.+?)",').findall(source)
 				if match:
-					return "http://cdn-ondemand-rtp.dcp.adaptive.level3.net/" + match[0] + ".m3u8"
+					if "http" not in match[0]: return "http:"+match[0]
+					return match[0]
 				else:
 					return ''
 		except: return ''
