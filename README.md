@@ -1,10 +1,5 @@
-Kodi RTP Play addon
-=========================
+# RTP Play Kodi video addon
 
-![Addon icon](https://github.com/enen92/plugin.video.rtpplay/blob/master/icon.png?raw=true)
+Work in progress. Expect it to break.
 
-RTP Play video addon for Kodi Entertainment Center. Watch Live and On-Demand broadcasts from RTP, portuguese public TV and Radio station.
-*This plugin is open-source and not endorsed by RTP.*
-
-
-
+Disclaimer: This plugin is not official and is not endorsed by RTP
