@@ -67,10 +67,10 @@ def play():
 	is_pseudo_aes = bool(re.findall("var aes = true", req))
 		
 	streams = re.compile('new RTPPlayer\(.*file\:.+?"(.+?)"', re.DOTALL).findall(req)
-	
+
+	final_stream_url = None
 	if streams:
 		print streams
-		final_stream_url = None
 		for stream in streams:
 			if ".m3u8" in stream.split('/')[-1]: 
 				final_stream_url = stream
