@@ -3,7 +3,9 @@
 import routing
 import logging
 import requests
+import inputstreamhelper
 import re
+import urllib
 import xbmcaddon
 from sys import exit, version_info
 from resources.lib import kodiutils
@@ -11,88 +13,117 @@ from resources.lib import kodilogging
 from xbmcgui import ListItem
 from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
 
+from resources.lib.channels import RTP_CHANNELS, HEADERS 
+
+
+if kodiutils.PY3:
+    from urllib.parse import urlencode
+else:
+    from urllib import urlencode
+
 
 ADDON = xbmcaddon.Addon()
+ICON = ADDON.getAddonInfo("icon")
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
 kodilogging.config()
 plugin = routing.Plugin()
 
-__headers__ = {"User-Agent": "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36"}
-__base_url__ = "http://www.rtp.pt"
-__session__ = requests.Session()
-
-if version_info >= (3, 0):
-	from html.parser import HTMLParser
-else:
-	from HTMLParser import HTMLParser
-html_parser = HTMLParser()
-
-
 @plugin.route('/')
 def index():
-	try:
-		req = __session__.get("http://www.rtp.pt/play/", headers=__headers__).text
-	except:
-		kodiutils.ok(kodiutils.get_string(32000),kodiutils.get_string(32001))
-		exit(0)
+    # Request dvr
+    try:
+        req = requests.get("http://www.rtp.pt/play/direto", headers=HEADERS).text
+    except:
+        raise_notification()
 
-	match=re.compile('<a title=".+?direto (.+?)" href="(.+?)" class="mask-live "><img alt=".+?" src="(.+?)" class="img-responsive">.+?<span class="small"><b>(.+?)</b>').findall(req)
-	if match:
-		for channel,rel_url, img, prog in match:
-			liz = ListItem("[B][COLOR blue]{}[/B][/COLOR] ({})".format(kodiutils.smart_str(channel), kodiutils.smart_str(prog)))
-			if img.startswith("/"):
-				img = "http:{}".format(img)
-			
-			liz.setArt({"thumb": img, "icon": img, "fanart": kodiutils.FANART})
-			liz.setProperty('IsPlayable', 'true')
-			liz.setInfo("Video", infoLabels={"plot": html_parser.unescape(kodiutils.smart_str(prog))})
-			
-			addDirectoryItem(plugin.handle, plugin.url_for(play, rel_url=kodiutils.smart_str(rel_url), channel=kodiutils.smart_str(channel), img=kodiutils.smart_str(img), prog=kodiutils.smart_str(prog) ), liz, False)
-	
-	endOfDirectory(plugin.handle)
+    match = re.compile(r'<a title=".+? - (.+?)" href="/play/direto/(.+?)".*?\n.*?\n.*?<img alt=".+?" src ="(.+?)"').findall(req) #class="item">\n.+?<div class="img-holder">\n.+?<img alt=".+?" src ="(.+?)" class="img-responsive">').findall(req)
+    
+    for rtp_channel in RTP_CHANNELS:
+        dvr = "Not available"
+        progimg = ""
+        for prog, key, img in match:
+            if key.lower() == rtp_channel["id"]:
+                dvr = prog
+                if img.startswith("/"):
+                    img = "http:{}".format(img)
+                progimg = img
+                break
+        
+        liz = ListItem("[B][COLOR blue]{}[/B][/COLOR] ({})".format(
+            kodiutils.compat_py23str(rtp_channel["name"]),
+            kodiutils.compat_py23str(dvr))
+        )
+        liz.setArt({"thumb": progimg, "icon": progimg, "fanart": kodiutils.FANART})
+        liz.setProperty('IsPlayable', 'true')
+        liz.setInfo("Video", infoLabels={"plot": kodiutils.compat_py23str(dvr)})
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(
+                play,
+                label=kodiutils.compat_py23str(rtp_channel["name"]),
+                channel=kodiutils.compat_py23str(rtp_channel["id"]),
+                img=kodiutils.compat_py23str(progimg),
+                prog=kodiutils.compat_py23str(dvr)
+            ), liz, False)
+
+    endOfDirectory(plugin.handle)
 
 
 @plugin.route('/play')
 def play():
-	rel_url = plugin.args["rel_url"][0]
-	channel = plugin.args["channel"][0]
-	prog = plugin.args["prog"][0]
-	icon = plugin.args["img"][0]
-	try:
-		req = __session__.get("{}{}".format(__base_url__, rel_url)).text
-	except:
-		kodiutils.ok(kodiutils.get_string(32000),kodiutils.get_string(32002))
-		exit(0)
+    channel = plugin.args["channel"][0]
+    name = plugin.args["label"][0]
+    prog = plugin.args["prog"][0]
 
-	is_pseudo_aes = bool(re.findall("var aes = true", req))
-		
-	streams = re.compile('new RTPPlayer\(.*file\:.+?"(.+?)"', re.DOTALL).findall(req)
-	
-	if streams:
-		print streams
-		final_stream_url = None
-		for stream in streams:
-			if ".m3u8" in stream.split('/')[-1]: 
-				final_stream_url = stream
-				break
+    icon = ICON
+    if "img" in plugin.args:
+        icon = plugin.args["img"][0]
 
-	if is_pseudo_aes:
-		try:
-			req = __session__.post("http://www.rtp.pt/services/playRequest.php", headers={"RTPPlayUrl":	final_stream_url})
-			final_stream_url = req.headers["RTPPlayWW"]
-		except:
-			kodiutils.ok(kodiutils.get_string(32000),kodiutils.get_string(32002))
-			exit(0)		
 
-	if final_stream_url:
-		liz = ListItem("[B][COLOR blue]{}[/B][/COLOR] ({})".format(kodiutils.smart_str(channel), kodiutils.smart_str(prog)))
-		liz.setArt({"thumb": icon, "icon": icon})
-		liz.setProperty('IsPlayable', 'true')
-		liz.setPath("{}|User-Agent=Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2228.0 Safari/537.36&Referer=http://www.rtp.pt/play/".format(final_stream_url))
-		setResolvedUrl(plugin.handle, True, liz)
-	else:
-		kodiutils.ok(kodiutils.get_string(32000),kodiutils.get_string(32002))
-		exit(0)
+    for rtp_channel in RTP_CHANNELS:
+        if rtp_channel["id"] == channel:
+            streams = rtp_channel["streams"]
+            for stream in streams:
+                if stream["type"] == "hls":
+                    if requests.head(stream["url"], headers=HEADERS).status_code == 200:
+                        liz = ListItem("[B][COLOR blue]{}[/B][/COLOR] ({})".format(
+                            kodiutils.compat_py23str(name),
+                            kodiutils.compat_py23str(prog))
+                        )
+                        liz.setArt({"thumb": icon, "icon": icon})
+                        liz.setProperty('IsPlayable', 'true')
+                        liz.setPath("{}|{}".format(stream["url"], urlencode(HEADERS)))
+                        setResolvedUrl(plugin.handle, True, liz)
+                        break
+                    else:
+                        continue
+                elif stream["type"] == "dashwv":
+                    is_helper = inputstreamhelper.Helper('mpd', drm='com.widevine.alpha')
+                    if is_helper.check_inputstream():
+                        # Grab token
+                        src = requests.get(stream["tk"], headers=HEADERS).text
+                        tk = re.compile('k: \"(.+?)\"', re.DOTALL).findall(src)
+                        if tk:
+                            payload = '{"drm_info":[D{SSM}], "kid": "E13506F7439BEAE7DDF0489FCDDF7481", "token":"' + tk[0] + '"}'
+                            liz = ListItem("[B][COLOR blue]{}[/B][/COLOR] ({})".format(
+                                kodiutils.compat_py23str(name),
+                                kodiutils.compat_py23str(prog))
+                            )
+                            liz.setPath(stream["url"])
+                            liz.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+                            liz.setProperty('inputstream.adaptive.manifest_type', 'mpd')
+                            liz.setProperty('inputstreamaddon', 'inputstream.adaptive')
+                            liz.setProperty('inputstream.adaptive.stream_headers', urlencode(HEADERS))
+                            liz.setMimeType('application/dash+xml')
+                            liz.setProperty('inputstream.adaptive.license_key', '{}|{}|{}|'.format(stream["license"], "Content-Type=application/json", urllib.quote(payload)))
+                            liz.setContentLookup(False)
+                            setResolvedUrl(plugin.handle, True, liz)
+
+
+def raise_notification():
+    kodiutils.ok(kodiutils.get_string(32000),kodiutils.get_string(32002))
+    exit(0)
+
 
 def run():
     plugin.run()
