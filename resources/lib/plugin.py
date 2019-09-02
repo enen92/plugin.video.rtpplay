@@ -3,7 +3,6 @@ import routing
 import logging
 import requests
 import inputstreamhelper
-import HTMLParser
 from bs4 import BeautifulSoup
 import re
 import urllib
@@ -31,16 +30,13 @@ plugin = routing.Plugin()
 
 @plugin.route('/')
 def index():
-    direto = ListItem("[B]Em direto[/B]")
-    direto.setProperty('IsPlayable', 'false')
+    direto = ListItem("[B]{}[/B]".format(kodiutils.get_string(32004)))
     addDirectoryItem(handle=plugin.handle, listitem=direto, isFolder=True, url=plugin.url_for(live))
 
-    programas = ListItem("[B]Programas[/B]")
-    programas.setProperty('IsPlayable', 'false')
+    programas = ListItem("[B]{}[/B]".format(kodiutils.get_string(32005)))
     addDirectoryItem(handle=plugin.handle, listitem=programas, isFolder=True, url=plugin.url_for(programs))
 
-    pesquisar = ListItem("[B]Pesquisar[/B]")
-    pesquisar.setProperty('IsPlayable', 'false')
+    pesquisar = ListItem("[B]{}[/B]".format(kodiutils.get_string(32006)))
     addDirectoryItem(handle=plugin.handle, listitem=pesquisar, isFolder=True, url=plugin.url_for(search))
 
     endOfDirectory(plugin.handle)
@@ -49,15 +45,14 @@ def index():
 @plugin.route('/search/')
 def search():
 
-    input_text = Dialog().input("Texto para pesquisar", "", INPUT_ALPHANUM)
+    input_text = Dialog().input(kodiutils.get_string(32007), "", INPUT_ALPHANUM)
     
     try:
         req = requests.get("https://www.rtp.pt/play/pesquisa?q={}".format(input_text), headers=HEADERS).text
     except:
         raise_notification()
 
-    pagei = ListItem("Resultados para [B]{}[/B]".format(input_text))
-    pagei.setProperty('IsPlayable', 'false')
+    pagei = ListItem("{} [B]{}[/B]".format(kodiutils.get_string(32008), input_text))
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
     soup = BeautifulSoup(req, 'html.parser')
@@ -198,9 +193,8 @@ def programs():
 
     i = 0
     for name in match:
-        name = HTMLParser.HTMLParser().unescape(kodiutils.compat_py23str(name))
+        name = BeautifulSoup(kodiutils.compat_py23str(name), "html.parser").text
         liz = ListItem(name)
-        liz.setProperty('IsPlayable', 'false')
         addDirectoryItem(handle=plugin.handle, listitem=liz, isFolder=True, url=plugin.url_for(programs_category, name=name, id=i, page=1))
         i = i + 1
 
@@ -220,7 +214,7 @@ def programs_category():
     except:
         raise_notification()
 
-    pagei = ListItem("[B]{}[/B] - Página {}".format(cat_name, page))
+    pagei = ListItem("[B]{}[/B] - {} {}".format(cat_name, kodiutils.get_string(32009), page))
     pagei.setProperty('IsPlayable', 'false')
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
@@ -256,8 +250,7 @@ def programs_category():
             ), liz, True)
 
     newpage = str(int(page) + 1)
-    nextpage = ListItem("[B]{}[/B] - Página {} >>>".format(cat_name, newpage))
-    nextpage.setProperty('IsPlayable', 'false')
+    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(cat_name, kodiutils.get_string(32009), newpage))
     addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True, url=plugin.url_for(programs_category, name=cat_name, id=cat_id, page=newpage))
 
     endOfDirectory(plugin.handle)
@@ -280,7 +273,7 @@ def programs_episodes():
     except:
         raise_notification()
 
-    pagei = ListItem("[B]{}[/B] - Página {}".format(title, page))
+    pagei = ListItem("[B]{}[/B] - {} {}".format(title, kodiutils.get_string(32009), page))
     pagei.setProperty('IsPlayable', 'false')
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
@@ -314,8 +307,7 @@ def programs_episodes():
             ), liz, False)
 
     newpage = str(int(page) + 1)
-    nextpage = ListItem("[B]{}[/B] - Página {} >>>".format(title, newpage))
-    nextpage.setProperty('IsPlayable', 'false')
+    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(title, kodiutils.get_string(32009), newpage))
     addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True, url=plugin.url_for(programs_episodes, title=title, ep=ep, img=img, url=url, page=newpage))
 
     endOfDirectory(plugin.handle)
@@ -330,12 +322,13 @@ def programs_play():
 
     try:
         req = requests.get("https://www.rtp.pt" + url, headers=HEADERS).text
+        
+        soup = BeautifulSoup(req, 'html.parser')
+    
+        script = soup.find_all('script')[-1].text
+        stream = re.search(r'file: "(.*)"', script).group(1)
     except:
         raise_notification()
-    soup = BeautifulSoup(req, 'html.parser')
-
-    script = soup.find_all('script')[-1].text
-    stream = re.search(r'file: "(.*)"', script).group(1)
 
     liz = ListItem("{} ({})".format(title, ep))
     liz.setArt({"thumb": img, "icon": img})
