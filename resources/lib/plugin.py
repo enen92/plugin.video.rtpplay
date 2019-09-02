@@ -283,7 +283,9 @@ def programs_episodes():
         url = a.get('href')
         img = ""
         if a.find('script') != None:
-            img = re.search(r'\'(.+?)\'', a.find('script').text).group(1)
+            match = re.search(r'\'(.+?)\'', a.find('script').text)
+            if len(match.groups()) > 0:
+                img = match.group(1)
         metas = a.find_next_sibling('i').find_all('meta')
         description = metas[1].get('content')
         ep = metas[0].get('content')
