@@ -30,7 +30,7 @@ msgstr "Não foi possível obter o url da stream. O plugin precisa de uma atuali
 
 msgctxt "#32003"
 msgid "Debug"
-msgstr ""
+msgstr "Depuração"
 
 msgctxt "#32004"
 msgid "Live TV"
