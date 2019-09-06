@@ -18,8 +18,10 @@ from resources.lib.channels import RTP_CHANNELS, HEADERS
 
 if kodiutils.PY3:
     from urllib.parse import urlencode
+    from html.parser import HTMLParser
 else:
     from urllib import urlencode
+    from HTMLParser import HTMLParser
 
 
 ADDON = xbmcaddon.Addon()
@@ -193,7 +195,8 @@ def programs():
 
     i = 0
     for name in match:
-        name = BeautifulSoup(kodiutils.compat_py23str(name), "html.parser").text
+        name = HTMLParser().unescape(kodiutils.compat_py23str(name))
+        name = name.encode('utf8', 'replace')
         liz = ListItem(name)
         addDirectoryItem(handle=plugin.handle, listitem=liz, isFolder=True, url=plugin.url_for(programs_category, name=name, id=i, page=1))
         i = i + 1
@@ -310,7 +313,15 @@ def programs_episodes():
 
     newpage = str(int(page) + 1)
     nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(title, kodiutils.get_string(32009), newpage))
-    addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True, url=plugin.url_for(programs_episodes, title=title, ep=ep, img=img, url=url, page=newpage))
+    addDirectoryItem(handle=plugin.handle, 
+        listitem=nextpage, 
+        isFolder=True, 
+        url=plugin.url_for(programs_episodes, 
+            title=kodiutils.compat_py23str(title), 
+            ep=kodiutils.compat_py23str(ep),
+            img=kodiutils.compat_py23str(img), 
+            url=kodiutils.compat_py23str(url), 
+            page=newpage))
 
     endOfDirectory(plugin.handle)
 

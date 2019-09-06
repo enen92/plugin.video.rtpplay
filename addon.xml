@@ -4,7 +4,7 @@
         <import addon="xbmc.python" version="2.25.0"/>
         <import addon="script.module.routing" version="0.2.0"/>
         <import addon="script.module.requests" version="2.12.4"/>
-        <import addon="script.module.inputstreamhelper" version="0.3.5"/>
+        <import addon="script.module.inputstreamhelper" version="0.4.1"/>
         <import addon="script.module.beautifulsoup4" version="4.6.2"/>
     </requires>
     <extension point="xbmc.python.pluginsource" library="main.py">
