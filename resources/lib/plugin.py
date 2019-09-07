@@ -44,7 +44,7 @@ def index():
     endOfDirectory(plugin.handle)
 
 
-@plugin.route('/search/')
+@plugin.route('/search')
 def search():
 
     input_text = Dialog().input(kodiutils.get_string(32007), "", INPUT_ALPHANUM)
@@ -86,7 +86,7 @@ def search():
     endOfDirectory(plugin.handle)
 
 
-@plugin.route('/live/')
+@plugin.route('/live')
 def live():
     # Request dvr
     try:
@@ -183,7 +183,7 @@ def live_play():
                             setResolvedUrl(plugin.handle, True, liz)
 
 
-@plugin.route('/programs/')
+@plugin.route('/programs')
 def programs():
     # Request dvr
     try:
@@ -209,7 +209,7 @@ def programs_category():
     page = plugin.args["page"][0]
     cat_id = plugin.args["id"][0]
     cat_name = plugin.args["name"][0]
-    
+
     try:
         req = requests.get("https://www.rtp.pt/play/bg_l_pg/?listcategory={}&page={}".format(
             cat_id,
@@ -217,7 +217,7 @@ def programs_category():
     except:
         raise_notification()
 
-    pagei = ListItem("[B]{}[/B] - {} {}".format(cat_name, kodiutils.get_string(32009), page))
+    pagei = ListItem("[B]{}[/B] - {} {}".format(kodiutils.compat_py23str(cat_name), kodiutils.get_string(32009), page))
     pagei.setProperty('IsPlayable', 'false')
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
@@ -246,15 +246,15 @@ def programs_category():
                 programs_episodes,
                 title=kodiutils.compat_py23str(title),
                 ep=kodiutils.compat_py23str(ep),
-                img=kodiutils.compat_py23str(img),
+                img=img,
                 description=kodiutils.compat_py23str(description),
                 url=kodiutils.compat_py23str(url),
                 page=1
             ), liz, True)
 
     newpage = str(int(page) + 1)
-    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(cat_name, kodiutils.get_string(32009), newpage))
-    addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True, url=plugin.url_for(programs_category, name=cat_name, id=cat_id, page=newpage))
+    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(kodiutils.compat_py23str(cat_name), kodiutils.get_string(32009), newpage))
+    addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True, url=plugin.url_for(programs_category, name=kodiutils.compat_py23str(cat_name), id=cat_id, page=newpage))
 
     endOfDirectory(plugin.handle)
 
@@ -276,7 +276,7 @@ def programs_episodes():
     except:
         raise_notification()
 
-    pagei = ListItem("[B]{}[/B] - {} {}".format(title, kodiutils.get_string(32009), page))
+    pagei = ListItem("[B]{}[/B] - {} {}".format(kodiutils.compat_py23str(title), kodiutils.get_string(32009), page))
     pagei.setProperty('IsPlayable', 'false')
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
@@ -284,7 +284,6 @@ def programs_episodes():
 
     for a in soup.find_all('a'):
         url = a.get('href')
-        img = ""
         if a.find('script') != None:
             match = re.search(r'\'(.+?)\'', a.find('script').text)
             if len(match.groups()) > 0:
@@ -312,7 +311,7 @@ def programs_episodes():
             ), liz, False)
 
     newpage = str(int(page) + 1)
-    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(title, kodiutils.get_string(32009), newpage))
+    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(kodiutils.compat_py23str(title), kodiutils.get_string(32009), newpage))
     addDirectoryItem(handle=plugin.handle, 
         listitem=nextpage, 
         isFolder=True, 
