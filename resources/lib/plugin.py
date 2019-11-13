@@ -334,11 +334,7 @@ def programs_play():
 
     try:
         req = requests.get("https://www.rtp.pt" + url, headers=HEADERS).text
-        
-        soup = BeautifulSoup(req, 'html.parser')
-    
-        script = soup.find_all('script')[-1].text
-        stream = re.search(r'file: "(.*)"', script).group(1)
+        stream = "https://streaming-ondemand.rtp.pt" + re.search(r'"https://streaming-ondemand.rtp.pt(.*)"', req).group(1)
     except:
         raise_notification()
 
