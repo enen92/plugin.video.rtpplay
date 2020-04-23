@@ -346,7 +346,10 @@ def programs_play():
     except:
         raise_notification()
 
-    liz = ListItem("{} ({})".format(title, ep))
+    liz = ListItem("{} ({})".format(
+        kodiutils.compat_py23str(title),
+        kodiutils.compat_py23str(ep))
+    )
     liz.setArt({"thumb": img, "icon": img})
     liz.setProperty('IsPlayable', 'true')
     liz.setPath("{}|{}".format(stream, urlencode(HEADERS)))
