@@ -26,7 +26,7 @@
             - Fix live (tks philipp-schmidt)
         </news>
         <disclaimer lang="en_GB">The plugin is unofficial and not endorsed by RTP. Expect it to break. </disclaimer>
-        <disclaimer lang="en_GB">Este plugin não é oficial nem desenvolvido pela RTP. </disclaimer>
+        <disclaimer lang="pt_PT">Este plugin não é oficial nem desenvolvido pela RTP. </disclaimer>
         <assets>
             <icon>icon.png</icon>
             <fanart>fanart.jpg</fanart>
