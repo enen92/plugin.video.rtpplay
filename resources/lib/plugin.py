@@ -102,7 +102,7 @@ def live():
     except:
         raise_notification()
 
-    match = re.compile(r'<a title=".+? - (.+?)" href="/play/direto/(.+?)".*?\n.*?\n.*?<img alt=".+?" src ="(.+?)".*?\n.*?\n.*?width:(.+?)%').findall(req)
+    match = re.compile(r'<a.+?title=".+? - (.+?)" href="/play/direto/(.+?)".*?\n.*?\n.*?<img alt=".+?" src="(.+?)".*?\n.*?\n.*?width:(.+?)%').findall(req)
 
     for rtp_channel in RTP_CHANNELS:
         dvr = "Not available"
