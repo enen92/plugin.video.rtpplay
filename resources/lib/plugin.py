@@ -223,7 +223,7 @@ def programs_category():
     try:
         req = requests.get("https://www.rtp.pt/play/bg_l_pg/?listcategory={}&page={}".format(
             cat_id,
-            page), headers=HEADERS)
+            page), headers=HEADERS_VOD)
         req.encoding = "latin-1"
         req = req.text
     except:
@@ -355,14 +355,9 @@ def programs_play():
     try:
         req = requests.get("https://www.rtp.pt" + url, headers=HEADERS)
         req.encoding = "latin-1"
-        stream = re.search(r'"https://(.+?)ondemand.rtp.pt(.*?)"', req.text)
-        stream = "https://" + stream.group(1) + "ondemand.rtp.pt" + stream.group(2)
+        stream = kodiutils.find_stream_url(req.text)
     except:
-        try:
-            stream = re.search(r'"https://(.+?)streaming.rtp.pt(.*?)"', req.text)
-            stream = "https://" + stream.group(1) + "streaming.rtp.pt" + stream.group(2)
-        except:
-            raise_notification()
+        raise_notification()
 
     liz = ListItem("{} ({})".format(
         kodiutils.compat_py23str(title),
