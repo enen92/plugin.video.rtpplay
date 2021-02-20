@@ -5,9 +5,11 @@ import xbmcaddon
 import xbmcgui
 import xbmcvfs
 import sys
-import os
 import logging
 import json as json
+import re
+import base64
+from urllib.parse import unquote
 
 PY3 =  sys.version_info > (3, 0)
 
@@ -121,3 +123,22 @@ def kodi_json_request(params):
         logger.warn("[%s] %s" %
                     (params['method'], response['error']['message']))
         return None
+
+
+def find_stream_url(html):
+    try:
+        for m in re.finditer(r'decodeURIComponent(?:(\s+)?)\((?:(\s+)?)\["(.*?)"]', html):
+            url = base64.b64decode(unquote(m.group(3).replace(" ", "").replace('","', ""))).decode('utf-8')
+            if url.startswith("http"):
+                return url
+    except:
+        pass
+    urls = ["ondemand.rtp.pt", "streaming.rtp.pt", "live.rtp.pt"]
+    for base_url in urls:
+        try:
+            for m in re.finditer(r'"https://(.+?)' + base_url + '(.*?)"', html):
+                if m.group(2) and "preview" not in m.group(2):
+                    return "https://" + m.group(1) + base_url + m.group(2)
+        except:
+            pass
+    raise ValueError
