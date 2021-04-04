@@ -134,7 +134,6 @@ def kodi_json_request(params):
 
 def find_stream_url(html):
     url = ''
-    i = 0
 
     needle = [  "hls : atob( decodeURIComponent(",
                 "hls : ",
