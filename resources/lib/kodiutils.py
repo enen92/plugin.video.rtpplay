@@ -133,26 +133,56 @@ def kodi_json_request(params):
 
 
 def find_stream_url(html):
-    try:
-        for m in re.finditer(r'decodeURIComponent(?:(\s+)?)\((?:(\s+)?)\["(.*?)"]', html):
-            url = unquote(m.group(3).replace(" ", "").replace('","', ""))
-            if url.startswith("http"):
-                return url
-            if url.endswith(".mp4"):
-                continue
-            url = base64.b64decode(url).decode('utf-8')
-            if url.startswith("http"):
-                return url
-    except:
-        pass
-    urls = ["ondemand.rtp.pt", "streaming.rtp.pt", "live.rtp.pt"]
-    for base_url in urls:
-        try:
-            for m in re.finditer(r'"https://(.+?)' + base_url + '(.*?)"', html):
-                if m.group(2) and "preview" not in m.group(2):
-                    return "https://" + m.group(1) + base_url + m.group(2)
-        except:
-            pass
+    url = ''
+    i = 0
+
+    needle = [  "hls : atob( decodeURIComponent(",
+                "hls : ",
+                '.mp3',
+                "hls : atob(decodeURIComponent("]
+
+    if needle[0] in html:
+        # Testado com:
+        # https://www.rtp.pt/play/p3909/e308024/4play
+        # https://www.rtp.pt/play/p8632/kubrick-na-voz-de-kubrick
+        ini = html.find(needle[0]) + len(needle[0])     # Procura atob
+        url = html[ini:]                                # Obtém o resto do HTML
+        end = url.find("]") - 1                         # Procura o fim do array ]
+        url = url[:end]                                 # Obtém o array de strings
+        url = unquote(url.replace('["','').replace('","','').replace('"].join(""))) },',''))    # Remove aspas, vírgulas e parte final do JS
+        url = base64.b64decode(url).decode('utf-8')     # Descodifica URL
+    elif needle[3] in html:
+        # Testado com:
+        # https://www.rtp.pt/play/estudoemcasa/p7776/portugues-1-ano
+        ini = html.find(needle[3]) + len(needle[3])     # Procura atob
+        url = html[ini:]                                # Obtém o resto do HTML
+        end = url.find("]") - 1                         # Procura o fim do array ]
+        url = url[:end]                                 # Obtém o array de strings
+        url = unquote(url.replace('["','').replace('","','').replace('"].join(""))) },',''))    # Remove aspas, vírgulas e parte final do JS
+        url = base64.b64decode(url).decode('utf-8')     # Descodifica URL
+    elif needle[1] in html:
+        # Testado com:
+        # https://www.rtp.pt/play/palco/p7732/electrico
+        ini = html.find(needle[1]) + len(needle[1]) +1  # Procura hls : 
+        url = html[ini:]                                # Obtém resto do HTML
+        end = url.find('",')                            # Procura o fim do atributo ",
+        url = url[:end]                                 # Obtém o URL
+    elif needle[2] in html:
+        # Testado com:
+        # https://www.rtp.pt/play/p8695/flawless-radio
+        end = html.find(needle[2]) + len(needle[2]) # Procura por .mp3
+        url = html[:end]                            # Obtém HTML até ao .mp3
+        ini = url.rfind('"') + 1                    # Procura a primeira " a partir da direita
+        url = url[ini:]                             # Obtém o URL
+
+    url = url.replace('cdn-ondemand','streaming-ondemand')          # Altera servidor
+    url = url.replace('streaming-ondemand','ondemand-streaming')    # Altera servidor
+
+    if url.endswith("/master.m3u8"):                                # Corrige extensão para .mp4
+        url = url.replace("/master.m3u8",".mp4")
+
+    return url
+
     raise ValueError
 
 
