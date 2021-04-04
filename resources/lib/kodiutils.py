@@ -134,7 +134,7 @@ def kodi_json_request(params):
 
 def find_stream_url(html):
     url = ''
-
+    # Needles para procura da informação de stream no HaysTackML
     needle = [  "hls : atob( decodeURIComponent(",
                 "hls : ",
                 '.mp3',
@@ -181,8 +181,6 @@ def find_stream_url(html):
         url = url.replace("/master.m3u8",".mp4")
 
     return url
-
-    raise ValueError
 
 
 def convertVttSrt(fileContents):
