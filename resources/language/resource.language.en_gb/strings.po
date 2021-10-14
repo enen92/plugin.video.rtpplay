@@ -33,7 +33,7 @@ msgid "Debug"
 msgstr ""
 
 msgctxt "#32004"
-msgid "Live TV"
+msgid "Live TV & Radio"
 msgstr ""
 
 msgctxt "#32005"
