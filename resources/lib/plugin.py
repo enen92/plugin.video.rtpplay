@@ -35,9 +35,6 @@ def index():
     programas = ListItem("[B]{}[/B]".format(kodiutils.get_string(32005)))
     addDirectoryItem(handle=plugin.handle, listitem=programas, isFolder=True, url=plugin.url_for(programs))
 
-    # estudoemcasaitem = ListItem("[B]{}[/B]".format(kodiutils.get_string(32010)))
-    # addDirectoryItem(handle=plugin.handle, listitem=estudoemcasaitem, isFolder=True, url=plugin.url_for(estudoemcasa))
-
     pesquisar = ListItem("[B]{}[/B]".format(kodiutils.get_string(32006)))
     addDirectoryItem(handle=plugin.handle, listitem=pesquisar, isFolder=True, url=plugin.url_for(search))
 
@@ -311,45 +308,6 @@ def programs_play():
         liz.setSubtitles(subtitles)
 
     setResolvedUrl(plugin.handle, True, liz)
-
-
-# @plugin.route('/estudoemcasa')
-# def estudoemcasa():
-#     try:
-#         req = requests.get("https://www.rtp.pt/play/estudoemcasa/", headers=HEADERS)
-#         req.encoding = "latin-1"
-#         req = req.text
-#     except:
-#         raise_notification()
-#         return
-#
-#     soup = BeautifulSoup(req, 'html.parser')
-#
-#     for a in soup.find_all('a', class_='item wide-169'):
-#         url = a.get('href')
-#         title = a.get('title')
-#         img = a.find('img').get('data-src')
-#
-#         liz = ListItem("{}".format(
-#             title))
-#         )
-#         liz.setArt({"thumb": img,
-#                     "icon": img,
-#                     "fanart": kodiutils.FANART})
-#         liz.setInfo("Video", infoLabels={"title": title)})
-#
-#         addDirectoryItem(
-#             plugin.handle,
-#             plugin.url_for(
-#                 programs_episodes,
-#                 title=title),
-#                 img=img),
-#                 url=url),
-#                 ep=title),
-#                 page=1
-#             ), liz, True)
-#
-#     endOfDirectory(plugin.handle)
 
 
 def raise_notification():
