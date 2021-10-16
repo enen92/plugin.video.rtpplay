@@ -13,4 +13,4 @@ jobs:
       id: kodi-addon-checker
       uses: xbmc/action-kodi-addon-checker@v1.0
       with:
-        kodi-version: krypton
+        kodi-version: matrix
