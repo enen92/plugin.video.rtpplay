@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import routing
 import logging
 import xbmcaddon
@@ -47,11 +46,16 @@ def index():
 @plugin.route('/search')
 def search():
     input_text = Dialog().input(kodiutils.get_string(32007), "", INPUT_ALPHANUM)
+    return plugin.redirect(f'/search/{input_text}/1')
 
+
+@plugin.route('/search/<input_text>/<page>')
+def search_paged(input_text, page):
     showing_results = ListItem("{} [B]{}[/B]".format(kodiutils.get_string(32008), input_text))
     addDirectoryItem(handle=plugin.handle, listitem=showing_results, isFolder=False, url="")
 
-    search_results = rtpplayapi.search(input_text, 1)[0]
+    items_per_page = 30
+    search_results = rtpplayapi.search(input_text, per_page=items_per_page, page=page, one_page=1)[0]
     for page in search_results:
         for res in page["programs"]:
             title = res["program_title"]
@@ -75,7 +79,22 @@ def search():
                     prog_id=program_id,
                     page=1
                 ), liz, True)
-    endOfDirectory(plugin.handle)
+
+        if page.get("programs") and page.get("paging"):
+            item_count = int(page["paging"]["total"])
+            current_page = int(page["paging"]["current_page"])
+            if current_page * items_per_page < item_count:
+                nextpage = str(int(current_page) + 1)
+                nextpage_listitem = ListItem(
+                    "[B]{}[/B] - {} {} >>>".format(input_text, kodiutils.get_string(32009), nextpage))
+                addDirectoryItem(handle=plugin.handle,
+                                listitem=nextpage_listitem,
+                                isFolder=True,
+                                url=plugin.url_for(search_paged,
+                                                    input_text=input_text,
+                                                    page=nextpage))
+        
+        endOfDirectory(plugin.handle)
 
 
 @plugin.route('/live')

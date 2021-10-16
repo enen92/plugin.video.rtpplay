@@ -189,7 +189,7 @@ class RTPPlayAPI:
                                             one_page)
         return self.__request_paginated("list-programs/?page={{}}&rpp={}".format(per_page), one_page)
 
-    def search(self, search_term, per_page=30, one_page=0):
+    def search(self, search_term, page=1, per_page=30, one_page=0):
         """
 
         :param search_term: query string
@@ -197,8 +197,8 @@ class RTPPlayAPI:
         :param one_page:
         :return:
         """
-        return self.__request_paginated("search/?query={}&page={{}}&rpp={}".format(
-            urllib.parse.quote_plus(search_term), per_page), one_page)
+        return self.__request_paginated("search/?query={}&page={}&rpp={}".format(
+            urllib.parse.quote_plus(search_term), page, per_page), one_page)
 
     def __request_paginated(self, request, one_page):
         """
