@@ -1,3 +1,9 @@
+Version 6.0.0 (16/10/2021)
+- Drop python 2 support - The addon will be only available for matrix and up
+- New version based on the mobile api (massive thanks to @guipenedo)
+- Cleanup estudoemcasa
+- Fix paginated search
+
 Version 5.0.14
 - Minor version fix (py2)
 
