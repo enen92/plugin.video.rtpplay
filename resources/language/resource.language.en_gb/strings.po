@@ -63,3 +63,11 @@ msgstr ""
 msgctxt "#32011"
 msgid "Not Available"
 msgstr ""
+
+msgctxt "#32012"
+msgid "Live TV"
+msgstr ""
+
+msgctxt "#32013"
+msgid "Live Radio"
+msgstr ""

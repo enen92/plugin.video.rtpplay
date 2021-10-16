@@ -29,8 +29,11 @@ HEADERS = {
 
 @plugin.route('/')
 def index():
-    direto = ListItem("[B]{}[/B]".format(kodiutils.get_string(32004)))
-    addDirectoryItem(handle=plugin.handle, listitem=direto, isFolder=True, url=plugin.url_for(live))
+    livetv = ListItem("[B]{}[/B]".format(kodiutils.get_string(32012)))
+    addDirectoryItem(handle=plugin.handle, listitem=livetv, isFolder=True, url=plugin.url_for(live, content='tv'))
+
+    liveradio = ListItem("[B]{}[/B]".format(kodiutils.get_string(32013)))
+    addDirectoryItem(handle=plugin.handle, listitem=liveradio, isFolder=True, url=plugin.url_for(live, content='radio'))
 
     programas = ListItem("[B]{}[/B]".format(kodiutils.get_string(32005)))
     addDirectoryItem(handle=plugin.handle, listitem=programas, isFolder=True, url=plugin.url_for(programs))
@@ -77,69 +80,61 @@ def search():
 
 @plugin.route('/live')
 def live():
-    sections = [
-        {
-            "title": "TV",
-            "channels": rtpplayapi.get_live_tv_channels()
-        },
-        {
-            "title": "Radio",
-            "channels": rtpplayapi.get_live_radio_channels()
-        }
-    ]
+    content_type = plugin.args["content"][0]
+    if content_type == "tv":
+        channels = rtpplayapi.get_live_tv_channels()
+    elif content_type == "radio":
+        channels = rtpplayapi.get_live_radio_channels()
+    else:
+        raise Exception("Wrong content type")
 
-    for section in sections:
-        section_title = ListItem("[B]{}[/B]".format(section["title"]))
-        addDirectoryItem(handle=plugin.handle, listitem=section_title, isFolder=False, url="")
+    for channel in channels:
+        name = channel["channel_name"]
+        img = channel["channel_card_logo"]
 
-        for channel in section["channels"]:
-            name = channel["channel_name"]
-            img = channel["channel_card_logo"]
+        def find_on_air():
+            for onair in channel["onair"].values():
+                if "real_end_date_time_utc" not in onair or "real_date_time_utc" not in onair:
+                    continue
+                end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
+                start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
+                now = dt.datetime.now(dt.timezone.utc)
+                if now < start or now > end:
+                    continue
+                return onair
+            if "current" in channel["onair"]:
+                return channel["onair"]["current"]
 
-            def find_on_air():
-                for onair in channel["onair"].values():
-                    if "real_end_date_time_utc" not in onair or "real_date_time_utc" not in onair:
-                        continue
-                    end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
-                    start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
-                    now = dt.datetime.now(dt.timezone.utc)
-                    if now < start or now > end:
-                        continue
-                    return onair
-                if "current" in channel["onair"]:
-                    return channel["onair"]["current"]
+        onair = find_on_air()
+        if not onair:
+            continue
+        end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
+        start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
+        now = dt.datetime.now(dt.timezone.utc)
+        progpercent = round(100 * (now - start).seconds / (end - start).seconds)
+        progimg = img
 
-            onair = find_on_air()
-            if not onair:
-                continue
-            end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
-            start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
-            now = dt.datetime.now(dt.timezone.utc)
-            progpercent = round(100 * (now - start).seconds / (end - start).seconds)
-            progimg = img
-
-            liz = ListItem("[B][COLOR blue]{}[/COLOR][/B] ({}) [B]{}[/B]".format(
-                name,
-                onair["title"],
-                str(progpercent) + "%" if progpercent <= 100 else '')
-            )
-            liz.setArt({"thumb": progimg,
-                        "icon": progimg,
-                        "fanart": kodiutils.FANART})
-            liz.setProperty('IsPlayable', 'true')
-            liz.setInfo("Video",
-                        infoLabels={"plot": onair["description"]})
-            addDirectoryItem(
-                plugin.handle,
-                plugin.url_for(
-                    live_play,
-                    label=name,
-                    channel=channel["channel_id"],
-                    img=progimg,
-                    prog=onair["title"]
-                ), liz, False)
+        liz = ListItem("[B][COLOR blue]{}[/COLOR][/B] ({}) [B]{}[/B]".format(
+            name,
+            onair["title"],
+            str(progpercent) + "%" if progpercent <= 100 else '')
+        )
+        liz.setArt({"thumb": progimg,
+                    "icon": progimg,
+                    "fanart": kodiutils.FANART})
+        liz.setProperty('IsPlayable', 'true')
+        liz.setInfo("Video",
+                    infoLabels={"plot": onair["description"]})
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(
+                live_play,
+                label=name,
+                channel=channel["channel_id"],
+                img=progimg,
+                prog=onair["title"]
+            ), liz, False)
     endOfDirectory(plugin.handle)
-
 
 @plugin.route('/live/play')
 def live_play():
