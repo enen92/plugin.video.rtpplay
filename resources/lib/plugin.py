@@ -22,7 +22,7 @@ plugin = routing.Plugin()
 rtpplayapi = RTPPlayAPI()
 
 HEADERS = {
-    "User-Agent": "M3UPT",
+    "User-Agent": "Opera",
 }
 
 
