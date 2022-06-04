@@ -22,7 +22,7 @@ plugin = routing.Plugin()
 rtpplayapi = RTPPlayAPI()
 
 HEADERS = {
-    "User-Agent": "RTP Play/2.0.26 (Linux;Android 11) ExoPlayerLib/2.11.8",
+    "User-Agent": "M3UPT",
 }
 
 
