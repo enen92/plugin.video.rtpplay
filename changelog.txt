@@ -1,3 +1,9 @@
+Version 7.0.0 (08/10/2026)
+- Use the RTP Play website instead of the mobile app API, which no longer accepts requests
+- Support DRM protected content (RTP2 live and most on demand TV) through inputstream.adaptive and Widevine
+- Search now lists episodes directly
+- Log in with your RTP account to use your favourites and continue watching
+
 Version 6.0.3 (15/08/2022)
 - Add support for inputstream.adaptive
 - Minor fixes

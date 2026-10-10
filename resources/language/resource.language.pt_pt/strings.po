@@ -79,3 +79,75 @@ msgstr "Preferir addon inputstream.adaptive para reprodução"
 msgctxt "#32015"
 msgid "All programs"
 msgstr "Todos os programas"
+
+msgctxt "#32016"
+msgid "Log in to your RTP account"
+msgstr "Iniciar sessão na sua conta RTP"
+
+msgctxt "#32017"
+msgid "Log out"
+msgstr "Terminar sessão"
+
+msgctxt "#32018"
+msgid "Your favourites"
+msgstr "Os seus favoritos"
+
+msgctxt "#32019"
+msgid "Continue watching"
+msgstr "Continuar a ver"
+
+msgctxt "#32020"
+msgid "Add to favourites"
+msgstr "Adicionar aos favoritos"
+
+msgctxt "#32021"
+msgid "Remove from favourites"
+msgstr "Remover dos favoritos"
+
+msgctxt "#32022"
+msgid "Remove from continue watching"
+msgstr "Remover de Continuar a ver"
+
+msgctxt "#32023"
+msgid "On your phone or computer, go to [B]{}[/B] and enter the code [B]{}[/B]"
+msgstr "No telemóvel ou computador, aceda a [B]{}[/B] e introduza o código [B]{}[/B]"
+
+msgctxt "#32024"
+msgid "Logged in as {}"
+msgstr "Sessão iniciada como {}"
+
+msgctxt "#32025"
+msgid "Logged out"
+msgstr "Sessão terminada"
+
+msgctxt "#32026"
+msgid "Resume from {}"
+msgstr "Retomar a partir de {}"
+
+msgctxt "#32027"
+msgid "Play from beginning"
+msgstr "Reproduzir desde o início"
+
+msgctxt "#32028"
+msgid "Account"
+msgstr "Conta"
+
+msgctxt "#32029"
+msgid "Your RTP session has expired. Please log in again."
+msgstr "A sua sessão RTP expirou. Inicie sessão novamente."
+
+msgctxt "#32030"
+msgid "Added to favourites"
+msgstr "Adicionado aos favoritos"
+
+msgctxt "#32031"
+msgid "Removed from favourites"
+msgstr "Removido dos favoritos"
+
+msgctxt "#32032"
+msgid "Could not log in"
+msgstr "Não foi possível iniciar sessão"
+
+msgctxt "#32033"
+msgid "Items per page"
+msgstr "Itens por página"

@@ -1,15 +1,17 @@
+import json
+import math
+import re
 import routing
 import logging
+import xbmc
 import xbmcaddon
-from sys import exit
 from resources.lib import kodiutils
 from resources.lib import kodilogging
-from xbmcgui import ListItem, Dialog, INPUT_ALPHANUM
-from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl
+from xbmcgui import ListItem, Dialog, DialogProgress, Window, INPUT_ALPHANUM
+from xbmcplugin import addDirectoryItem, endOfDirectory, setResolvedUrl, addSortMethod, SORT_METHOD_LABEL, SORT_METHOD_NONE
 
-from .kodiutils import format_date, get_stream_url, get_subtitles
-from .rtpplayapi import RTPPlayAPI
-import datetime as dt
+from . import rtpplay
+from .rtpaccount import Account, LoginError
 
 from urllib.parse import urlencode
 
@@ -17,20 +19,29 @@ from inputstreamhelper import Helper
 
 ADDON = xbmcaddon.Addon()
 ICON = ADDON.getAddonInfo("icon")
-PROTOCOL = "hls"
+KODI_VERSION = int(xbmc.getInfoLabel("System.BuildVersion").split(".")[0])
+# Lists on the website come in pages of 12 (search uses 16)
+PAGE_SIZE = 12
 logger = logging.getLogger(ADDON.getAddonInfo('id'))
 kodilogging.config()
 plugin = routing.Plugin()
-
-rtpplayapi = RTPPlayAPI()
-
-HEADERS = {
-    "User-Agent": "RTP Play/2.0.26 (Linux;Android 11) ExoPlayerLib/2.11.8",
-}
+account = Account(kodiutils.PROFILE)
+# Handed to the service, which reports playback progress for continue watching
+PLAYBACK_PROPERTY = "plugin.video.rtpplay.playback"
 
 
 @plugin.route('/')
 def index():
+    if account.logged_in:
+        favourites = ListItem("[B]{}[/B]".format(kodiutils.get_string(32018)))
+        addDirectoryItem(handle=plugin.handle, listitem=favourites, isFolder=True, url=plugin.url_for(favorites))
+
+        watching_item = ListItem("[B]{}[/B]".format(kodiutils.get_string(32019)))
+        addDirectoryItem(handle=plugin.handle, listitem=watching_item, isFolder=True, url=plugin.url_for(watching))
+    else:
+        login_item = ListItem("[B]{}[/B]".format(kodiutils.get_string(32016)))
+        addDirectoryItem(handle=plugin.handle, listitem=login_item, isFolder=False, url=plugin.url_for(login))
+
     livetv = ListItem("[B]{}[/B]".format(kodiutils.get_string(32012)))
     addDirectoryItem(handle=plugin.handle, listitem=livetv, isFolder=True, url=plugin.url_for(live, content='tv'))
 
@@ -49,6 +60,9 @@ def index():
 @plugin.route('/search')
 def search():
     input_text = Dialog().input(kodiutils.get_string(32007), "", INPUT_ALPHANUM)
+    if not input_text:
+        endOfDirectory(plugin.handle, succeeded=False)
+        return
     return plugin.redirect(f'/search/{input_text}/1')
 
 
@@ -57,189 +71,148 @@ def search_paged(input_text, page):
     showing_results = ListItem("{} [B]{}[/B]".format(kodiutils.get_string(32008), input_text))
     addDirectoryItem(handle=plugin.handle, listitem=showing_results, isFolder=False, url="")
 
-    items_per_page = 30
-    search_results = rtpplayapi.search(input_text, per_page=items_per_page, page=page, one_page=1)[0]
-    for page in search_results:
-        for res in page["programs"]:
-            title = res["program_title"]
-            img = res["program_image"]
-            description = res["program_lead"]
-            program_id = res["program_id"]
+    results = rtpplay.search(input_text, page=int(page))
+    for episode in results:
+        add_episode(episode, episode["title"], episode["image"])
 
-            liz = ListItem(title)
-            liz.setArt({"thumb": img,
-                        "icon": img,
-                        "fanart": kodiutils.FANART})
-            liz.setInfo("Video", infoLabels={"plot": description,
-                                             "title": title})
-
-            addDirectoryItem(
-                plugin.handle,
-                plugin.url_for(
-                    programs_episodes,
-                    title=title,
-                    img=img,
-                    prog_id=program_id,
-                    page=1
-                ), liz, True)
-
-        if page.get("programs") and page.get("paging"):
-            item_count = int(page["paging"]["total"])
-            current_page = int(page["paging"]["current_page"])
-            if current_page * items_per_page < item_count:
-                nextpage = str(int(current_page) + 1)
-                nextpage_listitem = ListItem(
-                    "[B]{}[/B] - {} {} >>>".format(input_text, kodiutils.get_string(32009), nextpage))
-                addDirectoryItem(handle=plugin.handle,
-                                listitem=nextpage_listitem,
-                                isFolder=True,
-                                url=plugin.url_for(search_paged,
-                                                    input_text=input_text,
-                                                    page=nextpage))
-        endOfDirectory(plugin.handle)
+    if len(results) >= PAGE_SIZE:
+        nextpage = str(int(page) + 1)
+        nextpage_listitem = ListItem(
+            "[B]{}[/B] - {} {} >>>".format(input_text, kodiutils.get_string(32009), nextpage))
+        addDirectoryItem(handle=plugin.handle,
+                         listitem=nextpage_listitem,
+                         isFolder=True,
+                         url=plugin.url_for(search_paged,
+                                            input_text=input_text,
+                                            page=nextpage))
+    endOfDirectory(plugin.handle)
 
 
 @plugin.route('/live')
 def live():
     content_type = plugin.args["content"][0]
-    if content_type == "tv":
-        channels = rtpplayapi.get_live_tv_channels()
-    elif content_type == "radio":
-        channels = rtpplayapi.get_live_radio_channels()
-    else:
+    if content_type not in ("tv", "radio"):
         raise Exception("Wrong content type")
 
-    for channel in channels:
-        name = channel["channel_name"]
-        img = channel["channel_card_logo"]
-
-        def find_on_air():
-            for onair in channel["onair"].values():
-                if "real_end_date_time_utc" not in onair or "real_date_time_utc" not in onair:
-                    continue
-                end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
-                start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
-                now = dt.datetime.now(dt.timezone.utc)
-                if now < start or now > end:
-                    continue
-                return onair
-            if "current" in channel["onair"]:
-                return channel["onair"]["current"]
-
-        onair = find_on_air()
-        if not onair:
-            continue
-        end = dt.datetime.fromisoformat(onair["real_end_date_time_utc"])
-        start = dt.datetime.fromisoformat(onair["real_date_time_utc"])
-        now = dt.datetime.now(dt.timezone.utc)
-
-        if (end - start).seconds > 0:
-            progpercent = round(100 * (now - start).seconds / (end - start).seconds)
-            progpercent = str(progpercent) + "%" if progpercent <= 100 else ''
-        else:
-            progpercent = ''
-
-        progimg = img
+    for channel in rtpplay.get_live_channels(content_type):
+        name = channel["name"]
+        img = channel["image"] or channel["logo"]
+        progress = "{}%".format(channel["progress"]) if channel["progress"] is not None else ""
 
         liz = ListItem("[B][COLOR blue]{}[/COLOR][/B] ({}) [B]{}[/B]".format(
             name,
-            onair["title"],
-            progpercent)
+            channel["onair"],
+            progress)
         )
-        liz.setArt({"thumb": progimg,
-                    "icon": progimg,
+        liz.setArt({"thumb": img,
+                    "icon": channel["logo"] or img,
                     "fanart": kodiutils.FANART})
         liz.setProperty('IsPlayable', 'true')
-        liz.setInfo("Video",
-                    infoLabels={"plot": onair["description"]})
+        liz.setInfo("Music" if content_type == "radio" else "Video",
+                    infoLabels={"title": channel["onair"]})
         addDirectoryItem(
             plugin.handle,
             plugin.url_for(
                 live_play,
                 label=name,
-                channel=channel["channel_id"],
-                img=progimg,
-                prog=onair["title"],
-                content=content_type
+                key=channel["key"],
+                img=img,
+                prog=channel["onair"]
             ), liz, False)
     endOfDirectory(plugin.handle)
 
+
 @plugin.route('/live/play')
 def live_play():
-    channel = plugin.args["channel"][0]
+    key = plugin.args["key"][0]
     name = plugin.args["label"][0]
     prog = plugin.args["prog"][0]
-    content_type = plugin.args["content"][0]
 
     icon = ICON
     if "img" in plugin.args:
         icon = plugin.args["img"][0]
-
-    channel = rtpplayapi.get_channel(channel)
 
     liz = ListItem("[COLOR blue][B]{}[/B][/COLOR] ({})".format(
         name,
         prog)
     )
     liz.setArt({"thumb": icon, "icon": icon})
-    liz.setProperty('IsPlayable', 'true')
-    if kodiutils.get_setting_as_bool("use_isa") and not content_type == "radio":
-        is_helper = Helper(PROTOCOL)
-        if is_helper.check_inputstream():
-            liz.setProperty('inputstream', is_helper.inputstream_addon)
-            liz.setProperty('inputstream.adaptive.manifest_type', PROTOCOL)
-            liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
-            liz.setProperty('inputstream.adaptive.stream_headers', urlencode(HEADERS))
-            liz.setPath(get_stream_url(channel[0]))
-    else:
-        liz.setPath("{}|{}".format(get_stream_url(channel[0]), urlencode(HEADERS)))
-    setResolvedUrl(plugin.handle, True, liz)
+    play(liz, rtpplay.get_live_stream(key))
 
 
 @plugin.route('/programs')
 def programs():
-    categories = rtpplayapi.get_categories()
-
-    addDirectoryItem(handle=plugin.handle, listitem=ListItem(kodiutils.get_string(32015)),
-                     isFolder=True, url=plugin.url_for(programs_category, name=kodiutils.get_string(32015), id=0, page=1))
-
-    for i, name in categories.items():
-        name = name
-        liz = ListItem(name)
-        addDirectoryItem(handle=plugin.handle, listitem=liz, isFolder=True, url=plugin.url_for(programs_category,
-                                                                                               name=name, id=i, page=1))
+    for category in rtpplay.get_categories():
+        liz = ListItem(category["name"])
+        addDirectoryItem(handle=plugin.handle, listitem=liz, isFolder=True,
+                         url=plugin.url_for(programs_category, name=category["name"],
+                                            slug=category["slug"], page=1))
 
     endOfDirectory(plugin.handle)
 
 
 @plugin.route('/programs/category')
 def programs_category():
-    page = int(plugin.args["page"][0])
-    cat_id = plugin.args["id"][0]
+    slug = plugin.args["slug"][0]
     cat_name = plugin.args["name"][0]
+    page = int(plugin.args.get("page", [1])[0])
 
-    pagei = ListItem("[B]{}[/B] - {} {}".format(cat_name, kodiutils.get_string(32009), page))
-    pagei.setProperty('IsPlayable', 'false')
-    addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
+    # Resolved once and carried along; "all programs" has no id
+    if "id" in plugin.args:
+        cat_id = plugin.args["id"][0]
+    else:
+        cat_id = rtpplay.get_category_id(slug)
 
-    programs = rtpplayapi.list_programs(cat_id, one_page=page)[0][0]["programs"]
+    # Configured items per page: 10, 20, 30, 40, or 50 (default 30)
+    page_size = kodiutils.get_setting_as_int("items_per_page")
+    if page_size not in (10, 20, 30, 40, 50):
+        page_size = 30
 
-    for program in programs:
-        prog_id = program["program_id"]
-        title = program["program_title"]
-        img = program["program_image"]
-        description = program["program_lead"]
-        episode_date = format_date(program["episode_date"])
+    items = rtpplay.list_all_category_programs(cat_id)
+    seen = set()
+    unique_items = []
+    for program in items:
+        # The site sometimes lists the same program twice
+        if program["program_id"] in seen:
+            continue
+        seen.add(program["program_id"])
+        unique_items.append(program)
 
-        liz = ListItem("{} ({})".format(
-            title,
-            episode_date)
-        )
+    total_items = len(unique_items)
+    total_pages = max(1, math.ceil(total_items / page_size))
+    if page > total_pages:
+        page = total_pages
+    if page < 1:
+        page = 1
+
+    start_idx = (page - 1) * page_size
+    end_idx = start_idx + page_size
+    page_items = unique_items[start_idx:end_idx]
+
+    favorite_keys = get_favorite_keys()
+
+    # Previous page button
+    if page > 1:
+        prev_page = page - 1
+        prev_label = "<<< {} {}/{}".format(
+            kodiutils.get_string(32009), prev_page, total_pages)
+        prev_item = ListItem(prev_label)
+        prev_item.setArt({"icon": ICON, "thumb": ICON, "fanart": kodiutils.FANART})
+        addDirectoryItem(handle=plugin.handle, listitem=prev_item, isFolder=True,
+                         url=plugin.url_for(programs_category, name=cat_name, slug=slug,
+                                            id=cat_id, page=prev_page))
+
+    for program in page_items:
+        title = program["title"] or program["meta"]
+        img = program["image"]
+
+        liz = ListItem(title)
         liz.setArt({"thumb": img,
                     "icon": img,
                     "fanart": kodiutils.FANART})
-        liz.setInfo("Video", infoLabels={"plot": description,
+        liz.setInfo("Video", infoLabels={"plot": program["link_title"],
                                          "title": title})
+        liz.addContextMenuItems(favorite_context_menu(program["program_id"], program["slug"], favorite_keys))
 
         addDirectoryItem(
             plugin.handle,
@@ -247,18 +220,22 @@ def programs_category():
                 programs_episodes,
                 title=title,
                 img=img,
-                description=description,
-                prog_id=prog_id,
+                prog_id=program["program_id"],
                 page=1
             ), liz, True)
 
-    newpage = str(int(page) + 1)
-    nextpage = ListItem("[B]{}[/B] - {} {} >>>".format(cat_name,
-                                                       kodiutils.get_string(32009), newpage))
-    addDirectoryItem(handle=plugin.handle, listitem=nextpage, isFolder=True,
-                     url=plugin.url_for(programs_category, name=cat_name,
-                                        id=cat_id, page=newpage))
+    # Next page button
+    if end_idx < total_items:
+        next_page = page + 1
+        next_label = "{} {}/{} >>>".format(
+            kodiutils.get_string(32009), next_page, total_pages)
+        next_item = ListItem(next_label)
+        next_item.setArt({"icon": ICON, "thumb": ICON, "fanart": kodiutils.FANART})
+        addDirectoryItem(handle=plugin.handle, listitem=next_item, isFolder=True,
+                         url=plugin.url_for(programs_category, name=cat_name, slug=slug,
+                                            id=cat_id, page=next_page))
 
+    addSortMethod(plugin.handle, SORT_METHOD_NONE)
     endOfDirectory(plugin.handle)
 
 
@@ -273,87 +250,332 @@ def programs_episodes():
     pagei.setProperty('IsPlayable', 'false')
     addDirectoryItem(handle=plugin.handle, listitem=pagei, isFolder=False, url="")
 
-    episodes = rtpplayapi.list_episodes(prog_id, one_page=page)[0][0]["episodes"]
-
+    episodes = rtpplay.list_episodes(prog_id, page)
+    context_menu = favorite_context_menu(prog_id, episodes[0]["slug"] if episodes else "", get_favorite_keys())
     for episode in episodes:
-        img = episode["asset_thumb"]
-        description = episode["episode_description"]
-        episode_date = format_date(episode["episode_date"])
-        episode_id = episode["episode_id"]
+        add_episode(episode, title, img, context_menu)
 
-        liz = ListItem(episode_date)
-        liz.setArt({"thumb": img,
-                    "icon": img,
-                    "fanart": kodiutils.FANART})
-        liz.setInfo("Video", infoLabels={"plot": description + "...",
-                                         "title": episode_date})
-        liz.setProperty('IsPlayable', 'true')
-
-        addDirectoryItem(
-            plugin.handle,
-            plugin.url_for(
-                programs_play,
-                title=title,
-                episode_date=episode_date,
-                img=img,
-                description=description,
-                episode_id=episode_id,
-                prog_id=prog_id
-            ), liz, False)
-
-    newpage = str(int(page) + 1)
-    nextpage = ListItem(
-        "[B]{}[/B] - {} {} >>>".format(title, kodiutils.get_string(32009), newpage))
-    addDirectoryItem(handle=plugin.handle,
-                     listitem=nextpage,
-                     isFolder=True,
-                     url=plugin.url_for(programs_episodes,
-                                        title=title,
-                                        img=img,
-                                        prog_id=prog_id,
-                                        page=newpage))
+    if len(episodes) >= PAGE_SIZE:
+        newpage = str(page + 1)
+        nextpage = ListItem(
+            "[B]{}[/B] - {} {} >>>".format(title, kodiutils.get_string(32009), newpage))
+        addDirectoryItem(handle=plugin.handle,
+                         listitem=nextpage,
+                         isFolder=True,
+                         url=plugin.url_for(programs_episodes,
+                                            title=title,
+                                            img=img,
+                                            prog_id=prog_id,
+                                            page=newpage))
 
     endOfDirectory(plugin.handle)
+
+
+def add_episode(episode, program_title, program_img, context_menu=None):
+    label = episode["title"] or episode["meta"] or program_title
+    if episode["episode"] and episode["episode"].lower() not in label.lower():
+        label = "{} - {}".format(label, episode["episode"])
+    if episode["subtitle"]:
+        label = "{} - {}".format(label, episode["subtitle"])
+    if episode["date"] and episode["date"] not in label:
+        label = "{} ({})".format(label, episode["date"])
+    img = episode["image"] or program_img
+
+    is_audio = episode.get("audio", False)
+    liz = ListItem(label)
+    liz.setArt({"thumb": img,
+                "icon": img,
+                "fanart": kodiutils.FANART})
+    liz.setInfo("Music" if is_audio else "Video",
+                infoLabels={"plot": episode["description"] or episode["subtitle"] or episode["link_title"],
+                            "title": label})
+    liz.setProperty('IsPlayable', 'true')
+    if context_menu:
+        liz.addContextMenuItems(context_menu)
+
+    addDirectoryItem(
+        plugin.handle,
+        plugin.url_for(
+            programs_play,
+            title=label,
+            img=img,
+            episode_id=episode["episode_id"],
+            prog_id=episode["program_id"],
+            slug=episode["slug"]
+        ), liz, False)
 
 
 @plugin.route('/programs/play')
 def programs_play():
     title = plugin.args["title"][0]
-    episode_date = plugin.args["episode_date"][0]
-    img = plugin.args["img"][0]
+    img = plugin.args.get("img", [""])[0]
     episode_id = plugin.args["episode_id"][0]
     prog_id = plugin.args["prog_id"][0]
+    slug = plugin.args["slug"][0]
 
-    liz = ListItem("{} ({})".format(
-        title,
-        episode_date)
-    )
-    liz.setArt({"thumb": img, "icon": img})
+    liz = ListItem(title)
+    if img:
+        liz.setArt({"thumb": img, "icon": img})
+    stream = rtpplay.get_episode_stream(prog_id, episode_id, slug)
+    if stream:
+        liz.setInfo("Music" if stream.media_type == "audio" else "Video",
+                    infoLabels={"title": title})
+    if stream and stream.telemetry and account.logged_in:
+        resume_ms = ask_resume(stream.telemetry, always_resume="resume" in plugin.args)
+        if resume_ms is None:
+            # Cancelled the resume dialog
+            setResolvedUrl(plugin.handle, False, liz)
+            return
+        Window(10000).setProperty(PLAYBACK_PROPERTY, json.dumps({
+            "url": stream.url,
+            "telemetry": stream.telemetry,
+            "resume_ms": resume_ms,
+        }))
+    play(liz, stream)
+
+
+def ask_resume(telemetry, always_resume=False):
+    """:return: position to start from in milliseconds, or None if the user cancelled"""
+    try:
+        progress_ms = account.get_progress(telemetry["key"], telemetry["program_id"])
+    except Exception:
+        logger.exception("Could not get continue watching position")
+        return 0
+    if progress_ms < 30000:
+        return 0
+    if always_resume:
+        return progress_ms
+    seconds = progress_ms // 1000
+    position = "{}:{:02d}:{:02d}".format(seconds // 3600, seconds // 60 % 60, seconds % 60)
+    choice = Dialog().contextmenu([kodiutils.get_string(32026).format(position), kodiutils.get_string(32027)])
+    if choice < 0:
+        return None
+    return progress_ms if choice == 0 else 0
+
+
+# Account
+
+@plugin.route('/account/login')
+def login():
+    try:
+        device = account.start_device_login()
+    except Exception:
+        logger.exception("Could not start login")
+        kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32032))
+        return
+    message = kodiutils.get_string(32023).format(
+        device["verification_uri"].replace("https://", ""), device["user_code"])
+    expires = int(device.get("expires_in", 600))
+    interval = int(device.get("interval", 5))
+    progress = DialogProgress()
+    progress.create(kodiutils.get_string(32016), message)
+    monitor = xbmc.Monitor()
+    try:
+        waited = 0
+        while waited < expires:
+            progress.update(int(100 * waited / expires), message)
+            if progress.iscanceled() or monitor.waitForAbort(interval):
+                return
+            waited += interval
+            if account.poll_device_login(device["device_code"]):
+                break
+        else:
+            return
+    except Exception:
+        logger.exception("Login failed")
+        kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32032))
+        return
+    finally:
+        progress.close()
+    kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32024).format(account.username))
+    xbmc.executebuiltin("Container.Refresh")
+
+
+@plugin.route('/account/logout')
+def logout():
+    account.logout()
+    kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32025))
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def session_expired():
+    kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32029))
+    endOfDirectory(plugin.handle, succeeded=False)
+    xbmc.executebuiltin("Container.Update({},replace)".format(plugin.url_for(index)))
+
+
+def get_favorite_keys():
+    if not account.logged_in:
+        return None
+    try:
+        return {str(f.get("key")) for f in account.get_favorites()}
+    except Exception:
+        logger.exception("Could not get favourites")
+        return None
+
+
+def favorite_context_menu(program_id, slug, favorite_keys):
+    if favorite_keys is None:
+        return []
+    if str(program_id) in favorite_keys:
+        return [(kodiutils.get_string(32021),
+                 "RunPlugin({})".format(plugin.url_for(favorite_remove, prog_id=program_id)))]
+    return [(kodiutils.get_string(32020),
+             "RunPlugin({})".format(plugin.url_for(favorite_add, prog_id=program_id, slug=slug)))]
+
+
+@plugin.route('/account/favorites')
+def favorites():
+    try:
+        entries = account.get_favorites()
+    except LoginError:
+        return session_expired()
+
+    for favorite in entries:
+        prog_id = str(favorite.get("key"))
+        title = favorite.get("content_title", "")
+        img = favorite.get("content_img", "")
+        liz = ListItem(title)
+        liz.setArt({"thumb": img,
+                    "icon": img,
+                    "fanart": kodiutils.FANART})
+        liz.setInfo("Video", infoLabels={"title": title})
+        liz.addContextMenuItems([(kodiutils.get_string(32021),
+                                  "RunPlugin({})".format(plugin.url_for(favorite_remove, prog_id=prog_id)))])
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(
+                programs_episodes,
+                title=title,
+                img=img,
+                prog_id=prog_id,
+                page=1
+            ), liz, True)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route('/account/favorites/add')
+def favorite_add():
+    favorite = rtpplay.get_program_favorite(plugin.args["prog_id"][0], plugin.args["slug"][0])
+    if not favorite:
+        return
+    try:
+        account.add_favorite(favorite)
+    except LoginError:
+        return kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32029))
+    kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32030))
+    xbmc.executebuiltin("Container.Refresh")
+
+
+@plugin.route('/account/favorites/remove')
+def favorite_remove():
+    prog_id = plugin.args["prog_id"][0]
+    try:
+        for favorite in account.get_favorites():
+            if str(favorite.get("key")) == prog_id:
+                account.remove_favorite(favorite)
+    except LoginError:
+        return kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32029))
+    kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32031))
+    xbmc.executebuiltin("Container.Refresh")
+
+
+@plugin.route('/account/watching')
+def watching():
+    try:
+        entries = account.get_watching()
+    except LoginError:
+        return session_expired()
+
+    for entry in entries:
+        m = re.search(r"/play/p(\d+)/e(\d+)/([^/?#]*)", entry.get("content_url", ""))
+        if not m:
+            continue
+        prog_id, episode_id, slug = m.groups()
+        label = entry.get("content_title", "")
+        if entry.get("content_episode"):
+            label = "{} - Ep. {}".format(label, entry["content_episode"])
+        if entry.get("content_date"):
+            label = "{} ({})".format(label, "/".join(reversed(entry["content_date"].split("-"))))
+        img = entry.get("content_img", "")
+
+        liz = ListItem(label)
+        liz.setArt({"thumb": img,
+                    "icon": img,
+                    "fanart": kodiutils.FANART})
+        liz.setInfo("Video", infoLabels={"title": label})
+        liz.setProperty('IsPlayable', 'true')
+        # Shows the watched progress bar on the item
+        liz.setProperty('ResumeTime', str(int(float(entry.get("progress") or 0)) // 1000))
+        liz.setProperty('TotalTime', str(entry.get("content_duration") or 0))
+        liz.addContextMenuItems([(kodiutils.get_string(32022),
+                                  "RunPlugin({})".format(plugin.url_for(watching_remove, key=entry.get("key"))))])
+        addDirectoryItem(
+            plugin.handle,
+            plugin.url_for(
+                programs_play,
+                title=label,
+                img=img,
+                episode_id=episode_id,
+                prog_id=prog_id,
+                slug=slug,
+                resume=1
+            ), liz, False)
+    endOfDirectory(plugin.handle)
+
+
+@plugin.route('/account/watching/remove')
+def watching_remove():
+    key = plugin.args["key"][0]
+    try:
+        for entry in account.get_watching():
+            if str(entry.get("key")) == key:
+                account.ended_watching(entry)
+    except LoginError:
+        return kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32029))
+    xbmc.executebuiltin("Container.Refresh")
+
+
+def play(liz, stream):
+    if not stream:
+        kodiutils.notification(kodiutils.get_string(32000), kodiutils.get_string(32002))
+        setResolvedUrl(plugin.handle, False, liz)
+        return
+
     liz.setProperty('IsPlayable', 'true')
+    headers = urlencode(rtpplay.HEADERS)
 
-    episode = rtpplayapi.get_episode(prog_id, episode_id)["assets"][0]
+    # DASH is only used for DRM content and always needs inputstream.adaptive
+    use_isa = stream.manifest == "mpd" or (
+        stream.manifest == "hls" and stream.media_type == "video" and kodiutils.get_setting_as_bool("use_isa"))
+    if not use_isa:
+        liz.setPath("{}|{}".format(stream.url, headers))
+        setResolvedUrl(plugin.handle, True, liz)
+        return
 
-    if kodiutils.get_setting_as_bool("use_isa"):
-        is_helper = Helper(PROTOCOL)
-        if is_helper.check_inputstream():
-            liz.setProperty('inputstream', is_helper.inputstream_addon)
-            liz.setProperty('inputstream.adaptive.manifest_type', PROTOCOL)
-            liz.setProperty('inputstream.adaptive.stream_selection_type', 'adaptive')
-            liz.setProperty('inputstream.adaptive.stream_headers', urlencode(HEADERS))
-            liz.setPath(get_stream_url(episode))
-    else:
-        liz.setPath("{}|{}".format(get_stream_url(episode), urlencode(HEADERS)))
+    is_helper = Helper(stream.manifest, drm="com.widevine.alpha" if stream.drm else None)
+    if not is_helper.check_inputstream():
+        setResolvedUrl(plugin.handle, False, liz)
+        return
 
-    subtitles = get_subtitles(episode)
-    if subtitles:
-        liz.setSubtitles(subtitles)
-
+    liz.setPath(stream.url)
+    liz.setContentLookup(False)
+    if stream.manifest == "mpd":
+        liz.setMimeType("application/dash+xml")
+    liz.setProperty('inputstream', is_helper.inputstream_addon)
+    if KODI_VERSION < 21:
+        # Detected automatically (and deprecated) from Kodi 21 on
+        liz.setProperty('inputstream.adaptive.manifest_type', stream.manifest)
+    liz.setProperty('inputstream.adaptive.manifest_headers', headers)
+    liz.setProperty('inputstream.adaptive.stream_headers', headers)
+    if stream.drm:
+        if KODI_VERSION >= 22:
+            # license_type/license_key are deprecated from inputstream.adaptive 22.2
+            liz.setProperty('inputstream.adaptive.drm_legacy', rtpplay.widevine_drm_legacy())
+        else:
+            liz.setProperty('inputstream.adaptive.license_type', 'com.widevine.alpha')
+            liz.setProperty('inputstream.adaptive.license_key', rtpplay.widevine_license_key())
     setResolvedUrl(plugin.handle, True, liz)
-
-
-def raise_notification():
-    kodiutils.ok(kodiutils.get_string(32000), kodiutils.get_string(32002))
-    exit(0)
 
 
 def run():
