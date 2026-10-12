@@ -79,3 +79,79 @@ msgstr ""
 msgctxt "#32015"
 msgid "All programs"
 msgstr ""
+
+msgctxt "#32016"
+msgid "Log in to your RTP account"
+msgstr ""
+
+msgctxt "#32017"
+msgid "Log out"
+msgstr ""
+
+msgctxt "#32018"
+msgid "Your favourites"
+msgstr ""
+
+msgctxt "#32019"
+msgid "Continue watching"
+msgstr ""
+
+msgctxt "#32020"
+msgid "Add to favourites"
+msgstr ""
+
+msgctxt "#32021"
+msgid "Remove from favourites"
+msgstr ""
+
+msgctxt "#32022"
+msgid "Remove from continue watching"
+msgstr ""
+
+msgctxt "#32023"
+msgid "On your phone or computer, go to [B]{}[/B] and enter the code [B]{}[/B]"
+msgstr ""
+
+msgctxt "#32024"
+msgid "Logged in as {}"
+msgstr ""
+
+msgctxt "#32025"
+msgid "Logged out"
+msgstr ""
+
+msgctxt "#32026"
+msgid "Resume from {}"
+msgstr ""
+
+msgctxt "#32027"
+msgid "Play from beginning"
+msgstr ""
+
+msgctxt "#32028"
+msgid "Account"
+msgstr ""
+
+msgctxt "#32029"
+msgid "Your RTP session has expired. Please log in again."
+msgstr ""
+
+msgctxt "#32030"
+msgid "Added to favourites"
+msgstr ""
+
+msgctxt "#32031"
+msgid "Removed from favourites"
+msgstr ""
+
+msgctxt "#32032"
+msgid "Could not log in"
+msgstr ""
+
+msgctxt "#32033"
+msgid "Most recent"
+msgstr ""
+
+msgctxt "#32034"
+msgid "A–Z"
+msgstr ""

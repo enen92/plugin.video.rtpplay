@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <setting id="debug" type="bool" label="32003" default="false"/>
-    <setting id="use_isa" type="bool" label="32014" default="true"/>
+    <category label="32000">
+        <setting id="debug" type="bool" label="32003" default="false"/>
+        <setting id="use_isa" type="bool" label="32014" default="true"/>
+    </category>
+    <category label="32028">
+        <setting type="action" label="32016" action="RunPlugin(plugin://plugin.video.rtpplay/account/login)" option="close"/>
+        <setting type="action" label="32017" action="RunPlugin(plugin://plugin.video.rtpplay/account/logout)" option="close"/>
+    </category>
 </settings>
-
